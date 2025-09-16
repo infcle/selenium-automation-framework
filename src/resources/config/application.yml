@@ -1,0 +1,8 @@
+app:
+  url: https://www.example.com
+  browser: chrome
+  headless: false
+
+timeouts:
+  implicit: 10
+  explicit: 30
