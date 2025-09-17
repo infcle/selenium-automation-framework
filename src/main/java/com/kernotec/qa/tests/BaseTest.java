@@ -1,5 +1,6 @@
 package com.kernotec.qa.tests;
 
+import com.kernotec.qa.config.ConfigReader;
 import com.kernotec.qa.config.DriverManager;
 import com.kernotec.qa.config.YamlConfigReader;
 import com.kernotec.qa.utils.ScreenshotUtils;
@@ -44,7 +45,7 @@ public class BaseTest {
             DriverManager.initializeDriver(browser, Boolean.parseBoolean(headless));
 
             // Navegar a la URL del ambiente
-            String targetUrl = YamlConfigReader.getCurrentEnvironmentUrl();
+            String targetUrl = ConfigReader.getBaseUrl();
             logger.info("Navegando a URL: {}", targetUrl);
             DriverManager.navigateToUrl(targetUrl);
 
@@ -71,7 +72,7 @@ public class BaseTest {
         try {
             // Capturar screenshot si el test falló
             if (result.getStatus() == ITestResult.FAILURE &&
-                YamlConfigReader.takeScreenshotOnFailure())
+                ConfigReader.isScreenshotsEnabled())
             {
 
                 String testName = result.getMethod()
@@ -130,10 +131,10 @@ public class BaseTest {
     public void beforeSuite() {
         logger.info("=== INICIANDO SUITE DE TESTS ===");
         logger.info("Configuración del framework:");
-        logger.info("- Browser por defecto: {}", YamlConfigReader.getDefaultBrowser());
-        logger.info("- Environment: {}", YamlConfigReader.getEnvironment());
-        logger.info("- Base URL: {}", YamlConfigReader.getBaseUrl());
-        logger.info("- Headless: {}", YamlConfigReader.isHeadless());
+        logger.info("- Browser por defecto: {}", ConfigReader.getDefaultBrowser());
+        logger.info("- Environment: {}", ConfigReader.getEnvironment());
+        logger.info("- Base URL: {}", ConfigReader.getBaseUrl());
+        logger.info("- Headless: {}", ConfigReader.isHeadlessMode());
         logger.info("- Parallel execution: {}", YamlConfigReader.isParallelExecution());
         logger.info("- Thread count: {}", YamlConfigReader.getThreadCount());
     }
@@ -186,9 +187,8 @@ public class BaseTest {
                 break;
             case ITestResult.SKIP:
                 logger.warn("⏭️ TEST SALTADO: {}.{}", className, testName);
-                logger.warn("Razón: {}", result.getThrowable() != null ?
-                    result.getThrowable()
-                        .getMessage() : "No especificada");
+                logger.warn("Razón: {}", result.getThrowable() != null ? result.getThrowable()
+                    .getMessage() : "No especificada");
                 break;
             default:
                 logger.info("❓ TEST ESTADO DESCONOCIDO: {}.{}", className, testName);

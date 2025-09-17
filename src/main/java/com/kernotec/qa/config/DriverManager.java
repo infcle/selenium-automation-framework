@@ -73,11 +73,11 @@ public class DriverManager {
         webDriver.manage()
             .timeouts()
             .implicitlyWait(Duration.ofSeconds(
-                YamlConfigReader.getImplicitWait()));
+                ConfigReader.getImplicitWait()));
         webDriver.manage()
             .timeouts()
             .pageLoadTimeout(Duration.ofSeconds(
-                YamlConfigReader.getPageLoadTimeout()));
+                ConfigReader.getPageLoadTimeout()));
 
         driver.set(webDriver);
         logger.info("Driver inicializado exitosamente");
@@ -96,7 +96,7 @@ public class DriverManager {
         }
 
         // Obtener opciones desde configuración YAML
-        List<String> chromeOptions = YamlConfigReader.getChromeOptions();
+        List<String> chromeOptions = ConfigReader.getChromeOptions();
         if (chromeOptions != null && !chromeOptions.isEmpty()) {
             chromeOptions.forEach(options::addArguments);
         } else {
@@ -126,7 +126,7 @@ public class DriverManager {
         }
 
         // Obtener preferencias desde configuración YAML
-        Map<String, Object> firefoxPrefs = YamlConfigReader.getFirefoxPreferences();
+        Map<String, Object> firefoxPrefs = ConfigReader.getFirefoxPreferences();
         if (firefoxPrefs != null && !firefoxPrefs.isEmpty()) {
             firefoxPrefs.forEach((key, value) -> {
                 if (value instanceof Boolean) {

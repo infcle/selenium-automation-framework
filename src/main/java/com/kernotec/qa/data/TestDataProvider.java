@@ -1,9 +1,10 @@
 package com.kernotec.qa.data;
 
-import com.kernotec.qa.config.YamlConfigReader;
+import com.kernotec.qa.config.ConfigReader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.testng.annotations.DataProvider;
+
 
 /**
  * Clase para proveer datos de test a los métodos de testing Centraliza la gestión de datos de
@@ -27,7 +28,8 @@ public class TestDataProvider {
      */
     public static String getValidUsername() {
         // Usar configuración YAML
-        String username = YamlConfigReader.getUsername("admin");
+        String username = UserCredentials.getCredentials(UserCredentials.UserRole.ADMIN)
+            .getUsername();
         if (username == null) {
             username = VALID_USERNAME;
         }
@@ -42,7 +44,8 @@ public class TestDataProvider {
      */
     public static String getValidPassword() {
         // Usar configuración YAML
-        String password = YamlConfigReader.getPassword("admin");
+        String password = UserCredentials.getCredentials(UserCredentials.UserRole.ADMIN)
+            .getPassword();
         if (password == null) {
             password = VALID_PASSWORD;
         }
@@ -56,9 +59,11 @@ public class TestDataProvider {
      * @return Array con [username, password]
      */
     public static String[] getAdminCredentials() {
+        UserCredentials.CredentialData adminCreds = UserCredentials.getCredentials(
+            UserCredentials.UserRole.ADMIN);
         return new String[]{
-            YamlConfigReader.getUsername("admin"),
-            YamlConfigReader.getPassword("admin")
+            adminCreds.getUsername(),
+            adminCreds.getPassword()
         };
     }
 
@@ -68,9 +73,11 @@ public class TestDataProvider {
      * @return Array con [username, password]
      */
     public static String[] getRegularUserCredentials() {
+        UserCredentials.CredentialData testUserCreds = UserCredentials
+            .getCredentials(UserCredentials.UserRole.TESTUSER);
         return new String[]{
-            YamlConfigReader.getUsername("regular"),
-            YamlConfigReader.getPassword("regular")
+            testUserCreds.getUsername(),
+            testUserCreds.getPassword()
         };
     }
 
@@ -142,10 +149,10 @@ public class TestDataProvider {
     public static Object[][] getScreenResolutions() {
         return new Object[][]{
             {1920, 1080}, // Full HD
-            {1366, 768},  // Laptop común
-            {1280, 720},  // HD
-            {1024, 768},  // Resolución antigua
-            {360, 640}    // Mobile portrait
+            {1366, 768}, // Laptop común
+            {1280, 720}, // HD
+            {1024, 768}, // Resolución antigua
+            {360, 640} // Mobile portrait
         };
     }
 
@@ -258,7 +265,7 @@ public class TestDataProvider {
                 return new TestEnvironmentData(
                     getValidUsername(),
                     getValidPassword(),
-                    YamlConfigReader.getBaseUrl(),
+                    ConfigReader.getBaseUrl(),
                     "Default Environment"
                 );
         }

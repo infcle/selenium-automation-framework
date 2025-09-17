@@ -1,0 +1,67 @@
+# ================================================
+# SELENIUM AUTOMATION FRAMEWORK - CONFIGURACIÓN
+# Company QA Team - Application Configuration
+# ================================================
+
+# === INFORMACIÓN DE LA APLICACIÓN ===
+app:
+  name: "Selenium Automation Framework"
+  version: "1.0.0"
+  description: "Framework de automatización web para Kernotec"
+
+# URLs por ambiente
+environments:
+  dev:
+    baseUrl: "https://dev-app.company.com"
+  test:
+    baseUrl: "https://test-app.company.com"
+  staging:
+    baseUrl: "https://staging-app.company.com"
+  prod:
+    baseUrl: "https://app.company.com"
+
+# Configuración de testing
+testing:
+  environment: "test"
+  parallel:
+    enabled: false
+    threadCount: 3
+
+# Configuración de browsers
+browser:
+  default: "chrome"
+  headless: false
+  chrome:
+    options:
+      - "--no-sandbox"
+      - "--disable-dev-shm-usage"
+      - "--disable-gpu"
+      - "--disable-extensions"
+      - "--remote-allow-origins=*"
+  firefox:
+    preferences:
+      "dom.webnotifications.enabled": false
+      "media.navigator.permission.disabled": true
+
+# Timeouts
+timeouts:
+  implicit: 10
+  explicit: 30
+  pageLoad: 60
+  script: 30
+
+# Usuarios de prueba
+users:
+  admin:
+    username: "admin_user"
+    password: "Admin@123"
+    role: "administrator"
+  test:
+    username: "test_user"
+    password: "Test@123"
+    role: "tester"
+
+# Features
+features:
+  screenshots: true
+  apiTesting: true

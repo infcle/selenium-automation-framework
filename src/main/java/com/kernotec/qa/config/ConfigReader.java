@@ -5,7 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
@@ -282,6 +284,22 @@ public class ConfigReader {
     }
 
     /**
+     * Obtiene las opciones de Chrome desde la configuración
+     */
+    public static List<String> getChromeOptions() {
+        // Implementar lógica para obtener opciones de Chrome desde YAML
+        Map<String, Object> browserConfig = getMap("browser.chrome");
+        if (browserConfig != null && browserConfig.containsKey("options")) {
+            return (List<String>) browserConfig.get("options");
+        }
+        return new ArrayList<>();
+    }
+
+    public static Map<String, Object> getFirefoxPreferences() {
+        return getMap("browser.firefox.preferences");
+    }
+
+    /**
      * Obtiene el timeout explícito
      */
     public static int getExplicitWait() {
@@ -318,5 +336,25 @@ public class ConfigReader {
     public static boolean isScreenshotsEnabled() {
         Boolean enabled = getBoolean("features.screenshots");
         return enabled != null ? enabled : true;
+    }
+
+    /**
+     * Obtiene el username para un rol específico
+     *
+     * @param role Rol del usuario
+     * @return Username o null si no existe
+     */
+    public static String getUsername(String role) {
+        return getString("users." + role + ".username");
+    }
+
+    /**
+     * Obtiene el password para un rol específico
+     *
+     * @param role Rol del usuario
+     * @return Password o null si no existe
+     */
+    public static String getPassword(String role) {
+        return getString("users." + role + ".password");
     }
 }
