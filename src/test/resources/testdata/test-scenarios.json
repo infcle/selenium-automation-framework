@@ -1,0 +1,456 @@
+{
+  "testScenarios": [
+    {
+      "id": "TC001",
+      "name": "Login with valid credentials",
+      "description": "Verify that user can login with valid admin credentials",
+      "category": "Authentication",
+      "priority": "High",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Navigate to login page",
+          "expected": "Login page is displayed"
+        },
+        {
+          "step": 2,
+          "action": "Enter valid username",
+          "expected": "Username is entered successfully"
+        },
+        {
+          "step": 3,
+          "action": "Enter valid password",
+          "expected": "Password is entered successfully"
+        },
+        {
+          "step": 4,
+          "action": "Click login button",
+          "expected": "User is redirected to dashboard"
+        }
+      ],
+      "testData": {
+        "username": "admin@kernotec.com",
+        "password": "Admin123!",
+        "expectedUrl": "/dashboard",
+        "expectedTitle": "Dashboard"
+      }
+    },
+    {
+      "id": "TC002",
+      "name": "Login with invalid credentials",
+      "description": "Verify that user cannot login with invalid credentials",
+      "category": "Authentication",
+      "priority": "High",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Navigate to login page",
+          "expected": "Login page is displayed"
+        },
+        {
+          "step": 2,
+          "action": "Enter invalid username",
+          "expected": "Username is entered successfully"
+        },
+        {
+          "step": 3,
+          "action": "Enter invalid password",
+          "expected": "Password is entered successfully"
+        },
+        {
+          "step": 4,
+          "action": "Click login button",
+          "expected": "Error message is displayed"
+        }
+      ],
+      "testData": {
+        "username": "invalid@kernotec.com",
+        "password": "WrongPassword123!",
+        "expectedErrorMessage": "Invalid credentials",
+        "expectedUrl": "/login"
+      }
+    },
+    {
+      "id": "TC003",
+      "name": "Login with empty fields",
+      "description": "Verify validation when login fields are empty",
+      "category": "Validation",
+      "priority": "Medium",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Navigate to login page",
+          "expected": "Login page is displayed"
+        },
+        {
+          "step": 2,
+          "action": "Leave username field empty",
+          "expected": "Username field is empty"
+        },
+        {
+          "step": 3,
+          "action": "Leave password field empty",
+          "expected": "Password field is empty"
+        },
+        {
+          "step": 4,
+          "action": "Click login button",
+          "expected": "Validation error is displayed"
+        }
+      ],
+      "testData": {
+        "username": "",
+        "password": "",
+        "expectedErrorMessage": "Username and password are required",
+        "expectedUrl": "/login"
+      }
+    },
+    {
+      "id": "TC004",
+      "name": "Navigation to dashboard",
+      "description": "Verify navigation from home page to dashboard",
+      "category": "Navigation",
+      "priority": "Medium",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Login with valid credentials",
+          "expected": "User is logged in successfully"
+        },
+        {
+          "step": 2,
+          "action": "Navigate to home page",
+          "expected": "Home page is displayed"
+        },
+        {
+          "step": 3,
+          "action": "Click dashboard link",
+          "expected": "Dashboard page is displayed"
+        }
+      ],
+      "testData": {
+        "username": "admin@kernotec.com",
+        "password": "Admin123!",
+        "expectedUrl": "/dashboard",
+        "expectedTitle": "Dashboard"
+      }
+    },
+    {
+      "id": "TC005",
+      "name": "Logout functionality",
+      "description": "Verify that user can logout successfully",
+      "category": "Authentication",
+      "priority": "High",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Login with valid credentials",
+          "expected": "User is logged in successfully"
+        },
+        {
+          "step": 2,
+          "action": "Navigate to user menu",
+          "expected": "User menu is displayed"
+        },
+        {
+          "step": 3,
+          "action": "Click logout button",
+          "expected": "User is logged out and redirected to login page"
+        }
+      ],
+      "testData": {
+        "username": "admin@kernotec.com",
+        "password": "Admin123!",
+        "expectedUrl": "/login",
+        "expectedTitle": "Login"
+      }
+    },
+    {
+      "id": "TC006",
+      "name": "Search functionality",
+      "description": "Verify search functionality on dashboard",
+      "category": "Functionality",
+      "priority": "Medium",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Login with valid credentials",
+          "expected": "User is logged in successfully"
+        },
+        {
+          "step": 2,
+          "action": "Navigate to dashboard",
+          "expected": "Dashboard page is displayed"
+        },
+        {
+          "step": 3,
+          "action": "Enter search term",
+          "expected": "Search term is entered"
+        },
+        {
+          "step": 4,
+          "action": "Submit search",
+          "expected": "Search results are displayed"
+        }
+      ],
+      "testData": {
+        "username": "admin@kernotec.com",
+        "password": "Admin123!",
+        "searchTerm": "test",
+        "expectedResults": true
+      }
+    },
+    {
+      "id": "TC007",
+      "name": "User profile access",
+      "description": "Verify that user can access their profile",
+      "category": "Navigation",
+      "priority": "Low",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Login with valid credentials",
+          "expected": "User is logged in successfully"
+        },
+        {
+          "step": 2,
+          "action": "Click profile link",
+          "expected": "Profile page is displayed"
+        }
+      ],
+      "testData": {
+        "username": "admin@kernotec.com",
+        "password": "Admin123!",
+        "expectedUrl": "/profile",
+        "expectedTitle": "Profile"
+      }
+    },
+    {
+      "id": "TC008",
+      "name": "Settings page access",
+      "description": "Verify that admin user can access settings",
+      "category": "Authorization",
+      "priority": "Medium",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Login with admin credentials",
+          "expected": "Admin user is logged in successfully"
+        },
+        {
+          "step": 2,
+          "action": "Navigate to settings",
+          "expected": "Settings page is displayed"
+        }
+      ],
+      "testData": {
+        "username": "admin@kernotec.com",
+        "password": "Admin123!",
+        "expectedUrl": "/settings",
+        "expectedTitle": "Settings"
+      }
+    },
+    {
+      "id": "TC009",
+      "name": "Responsive design test",
+      "description": "Verify application works on different screen sizes",
+      "category": "UI/UX",
+      "priority": "Low",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Set browser window to mobile size",
+          "expected": "Browser window is resized"
+        },
+        {
+          "step": 2,
+          "action": "Navigate to login page",
+          "expected": "Login page is displayed responsively"
+        },
+        {
+          "step": 3,
+          "action": "Login with valid credentials",
+          "expected": "User can login on mobile view"
+        }
+      ],
+      "testData": {
+        "username": "admin@kernotec.com",
+        "password": "Admin123!",
+        "screenWidth": 375,
+        "screenHeight": 667
+      }
+    },
+    {
+      "id": "TC010",
+      "name": "Browser compatibility test",
+      "description": "Verify application works on different browsers",
+      "category": "Compatibility",
+      "priority": "Medium",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Open application in Chrome",
+          "expected": "Application loads in Chrome"
+        },
+        {
+          "step": 2,
+          "action": "Login with valid credentials",
+          "expected": "Login works in Chrome"
+        },
+        {
+          "step": 3,
+          "action": "Navigate to dashboard",
+          "expected": "Dashboard loads correctly in Chrome"
+        }
+      ],
+      "testData": {
+        "username": "admin@kernotec.com",
+        "password": "Admin123!",
+        "browser": "chrome",
+        "expectedUrl": "/dashboard"
+      }
+    }
+  ],
+  "testEnvironments": [
+    {
+      "name": "Development",
+      "baseUrl": "https://dev.kernotec.com",
+      "database": "dev_db",
+      "apiUrl": "https://dev-api.kernotec.com"
+    },
+    {
+      "name": "Testing",
+      "baseUrl": "https://test.kernotec.com",
+      "database": "test_db",
+      "apiUrl": "https://test-api.kernotec.com"
+    },
+    {
+      "name": "Staging",
+      "baseUrl": "https://staging.kernotec.com",
+      "database": "staging_db",
+      "apiUrl": "https://staging-api.kernotec.com"
+    }
+  ],
+  "testData": {
+    "users": [
+      {
+        "role": "admin",
+        "username": "admin@kernotec.com",
+        "password": "Admin123!",
+        "displayName": "Administrator",
+        "permissions": ["read", "write", "delete", "admin"]
+      },
+      {
+        "role": "testuser",
+        "username": "testuser@kernotec.com",
+        "password": "Test123!",
+        "displayName": "Test User",
+        "permissions": ["read", "write"]
+      },
+      {
+        "role": "readonly",
+        "username": "readonly@kernotec.com",
+        "password": "ReadOnly123!",
+        "displayName": "Read Only User",
+        "permissions": ["read"]
+      },
+      {
+        "role": "manager",
+        "username": "manager@kernotec.com",
+        "password": "Manager123!",
+        "displayName": "Manager",
+        "permissions": ["read", "write", "manage"]
+      }
+    ],
+    "invalidCredentials": [
+      {
+        "username": "",
+        "password": "",
+        "expectedError": "Username and password are required"
+      },
+      {
+        "username": "invalid@kernotec.com",
+        "password": "WrongPassword123!",
+        "expectedError": "Invalid credentials"
+      },
+      {
+        "username": "admin@kernotec.com",
+        "password": "",
+        "expectedError": "Password is required"
+      },
+      {
+        "username": "",
+        "password": "Admin123!",
+        "expectedError": "Username is required"
+      }
+    ],
+    "searchTerms": [
+      {
+        "term": "test",
+        "expectedResults": true,
+        "category": "general"
+      },
+      {
+        "term": "selenium",
+        "expectedResults": true,
+        "category": "technical"
+      },
+      {
+        "term": "xyzabc123",
+        "expectedResults": false,
+        "category": "invalid"
+      },
+      {
+        "term": "",
+        "expectedResults": false,
+        "category": "empty"
+      }
+    ],
+    "formValidation": [
+      {
+        "field": "email",
+        "value": "valid@email.com",
+        "isValid": true,
+        "expectedMessage": ""
+      },
+      {
+        "field": "email",
+        "value": "invalid-email",
+        "isValid": false,
+        "expectedMessage": "Please enter a valid email"
+      },
+      {
+        "field": "phone",
+        "value": "123-456-7890",
+        "isValid": true,
+        "expectedMessage": ""
+      },
+      {
+        "field": "phone",
+        "value": "invalid-phone",
+        "isValid": false,
+        "expectedMessage": "Please enter a valid phone number"
+      }
+    ]
+  },
+  "testConfiguration": {
+    "timeouts": {
+      "implicit": 10,
+      "explicit": 30,
+      "pageLoad": 60
+    },
+    "retryCount": 2,
+    "parallelExecution": true,
+    "browsers": ["chrome", "firefox", "edge"],
+    "environments": ["dev", "test", "staging"],
+    "screenshots": {
+      "onFailure": true,
+      "onSuccess": false
+    },
+    "reporting": {
+      "extentReports": true,
+      "testngReports": true,
+      "consoleLogs": true
+    }
+  }
+}

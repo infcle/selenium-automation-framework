@@ -1,0 +1,9 @@
+Username,Password,Role,DisplayName,Email,Department,IsActive
+admin@kernotec.com,Admin123!,admin,Administrator,admin@kernotec.com,IT,true
+testuser@kernotec.com,Test123!,testuser,Test User,testuser@kernotec.com,QA,true
+readonly@kernotec.com,ReadOnly123!,readonly,Read Only User,readonly@kernotec.com,Sales,true
+manager@kernotec.com,Manager123!,manager,Manager,manager@kernotec.com,Management,true
+user@kernotec.com,User123!,user,Regular User,user@kernotec.com,Operations,true
+developer@kernotec.com,Dev123!,developer,Developer,developer@kernotec.com,IT,true
+analyst@kernotec.com,Analyst123!,analyst,Analyst,analyst@kernotec.com,Analytics,true
+support@kernotec.com,Support123!,support,Support User,support@kernotec.com,Support,true

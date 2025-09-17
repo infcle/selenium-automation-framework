@@ -12,8 +12,7 @@ import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
- * Clase base para todos los Page Objects
- * Contiene funcionalidades comunes y métodos utilitarios
+ * Clase base para todos los Page Objects Contiene funcionalidades comunes y métodos utilitarios
  *
  * @author QA Team Kernotec
  * @version 1.0
@@ -33,11 +32,14 @@ public abstract class BasePage {
         this.wait = new WebDriverWait(driver, Duration.ofSeconds(ConfigReader.getExplicitWait()));
         this.webDriverUtils = new WebDriverUtils();
         PageFactory.initElements(driver, this);
-        logger.debug("Página {} inicializada", this.getClass().getSimpleName());
+        logger.debug(
+            "Página {} inicializada", this.getClass()
+                .getSimpleName());
     }
 
     /**
      * Obtiene el título de la página actual
+     *
      * @return Título de la página
      */
     public String getPageTitle() {
@@ -48,6 +50,7 @@ public abstract class BasePage {
 
     /**
      * Obtiene la URL actual
+     *
      * @return URL actual
      */
     public String getCurrentUrl() {
@@ -58,6 +61,7 @@ public abstract class BasePage {
 
     /**
      * Verifica si la página está completamente cargada
+     *
      * @return true si la página está cargada
      */
     public boolean isPageLoaded() {
@@ -66,6 +70,7 @@ public abstract class BasePage {
 
     /**
      * Espera a que la página se cargue completamente
+     *
      * @param timeoutSeconds Timeout en segundos
      */
     public void waitForPageLoad(int timeoutSeconds) {
@@ -75,7 +80,8 @@ public abstract class BasePage {
 
     /**
      * Hace clic en un elemento de forma segura
-     * @param element Elemento a hacer clic
+     *
+     * @param element     Elemento a hacer clic
      * @param elementName Nombre descriptivo del elemento para logs
      */
     protected void safeClick(WebElement element, String elementName) {
@@ -91,8 +97,9 @@ public abstract class BasePage {
 
     /**
      * Ingresa texto en un campo de forma segura
-     * @param element Campo de texto
-     * @param text Texto a ingresar
+     *
+     * @param element   Campo de texto
+     * @param text      Texto a ingresar
      * @param fieldName Nombre descriptivo del campo
      */
     protected void safeType(WebElement element, String text, String fieldName) {
@@ -101,7 +108,8 @@ public abstract class BasePage {
             element.clear();
             element.sendKeys(text);
             logger.info("Texto ingresado en campo {}: {}", fieldName,
-                text.replaceAll(".", "*")); // Enmascarar texto sensible en logs
+                text.replaceAll(".", "*")
+            ); // Enmascarar texto sensible en logs
         } catch (Exception e) {
             logger.error("Error ingresando texto en {}: {}", fieldName, e.getMessage());
             throw new RuntimeException("No se pudo ingresar texto en " + fieldName, e);
@@ -110,7 +118,8 @@ public abstract class BasePage {
 
     /**
      * Obtiene el texto de un elemento de forma segura
-     * @param element Elemento del cual obtener texto
+     *
+     * @param element     Elemento del cual obtener texto
      * @param elementName Nombre descriptivo del elemento
      * @return Texto del elemento
      */
@@ -128,7 +137,8 @@ public abstract class BasePage {
 
     /**
      * Verifica si un elemento está visible
-     * @param element Elemento a verificar
+     *
+     * @param element     Elemento a verificar
      * @param elementName Nombre descriptivo del elemento
      * @return true si está visible
      */
@@ -145,7 +155,8 @@ public abstract class BasePage {
 
     /**
      * Espera a que un elemento sea visible
-     * @param element Elemento a esperar
+     *
+     * @param element     Elemento a esperar
      * @param elementName Nombre descriptivo del elemento
      * @return true si el elemento se vuelve visible
      */
@@ -162,7 +173,8 @@ public abstract class BasePage {
 
     /**
      * Espera a que un elemento sea clickeable
-     * @param element Elemento a esperar
+     *
+     * @param element     Elemento a esperar
      * @param elementName Nombre descriptivo del elemento
      * @return true si el elemento se vuelve clickeable
      */
@@ -172,14 +184,16 @@ public abstract class BasePage {
             logger.info("Elemento {} ahora es clickeable", elementName);
             return true;
         } catch (Exception e) {
-            logger.error("Timeout esperando que {} sea clickeable: {}", elementName, e.getMessage());
+            logger.error(
+                "Timeout esperando que {} sea clickeable: {}", elementName, e.getMessage());
             return false;
         }
     }
 
     /**
      * Desplaza la página hasta un elemento
-     * @param element Elemento hasta el cual desplazar
+     *
+     * @param element     Elemento hasta el cual desplazar
      * @param elementName Nombre descriptivo del elemento
      */
     protected void scrollToElement(WebElement element, String elementName) {
@@ -193,6 +207,7 @@ public abstract class BasePage {
 
     /**
      * Toma una captura de pantalla de la página actual
+     *
      * @param screenshotName Nombre para la captura
      * @return Ruta del archivo de captura
      */
@@ -204,7 +219,8 @@ public abstract class BasePage {
      * Actualiza la página actual
      */
     protected void refreshPage() {
-        driver.navigate().refresh();
+        driver.navigate()
+            .refresh();
         waitForPageLoad(ConfigReader.getPageLoadTimeout());
         logger.info("Página actualizada");
     }
@@ -213,7 +229,8 @@ public abstract class BasePage {
      * Navega hacia atrás en el historial
      */
     protected void navigateBack() {
-        driver.navigate().back();
+        driver.navigate()
+            .back();
         waitForPageLoad(ConfigReader.getPageLoadTimeout());
         logger.info("Navegado hacia atrás");
     }
@@ -222,19 +239,22 @@ public abstract class BasePage {
      * Navega hacia adelante en el historial
      */
     protected void navigateForward() {
-        driver.navigate().forward();
+        driver.navigate()
+            .forward();
         waitForPageLoad(ConfigReader.getPageLoadTimeout());
         logger.info("Navegado hacia adelante");
     }
 
     /**
      * Método abstracto que cada página debe implementar para verificar que está cargada
+     *
      * @return true si la página está cargada correctamente
      */
     public abstract boolean isPageDisplayed();
 
     /**
      * Método abstracto para obtener el identificador único de la página
+     *
      * @return Identificador único de la página
      */
     public abstract String getPageIdentifier();

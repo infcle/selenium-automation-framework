@@ -1,0 +1,39 @@
+# Configuración específica para tests
+# Este archivo sobrescribe configuraciones de application.yml para testing
+
+# Configuración específica de test
+test:
+  environment: "test"
+  baseUrl: "https://test.kernotec.com"
+  timeout: 45
+  retryCount: 1
+
+# Configuración de browsers para testing
+browser:
+  default: "chrome"
+  headless: true
+  options:
+    chrome:
+      - "--headless"
+      - "--no-sandbox"
+      - "--disable-dev-shm-usage"
+      - "--disable-gpu"
+      - "--disable-extensions"
+      - "--window-size=1920,1080"
+
+# Configuración de usuarios de test
+users:
+  testuser:
+    username: "testuser@kernotec.com"
+    password: "Test123!"
+  admin:
+    username: "admin@kernotec.com"
+    password: "Admin123!"
+
+# Configuración de reportes para testing
+reporting:
+  screenshots:
+    onFailure: true
+    onSuccess: false
+  extentReports:
+    theme: "dark"

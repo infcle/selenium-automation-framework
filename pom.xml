@@ -14,13 +14,14 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <selenium.version>4.15.0</selenium.version>
-        <testng.version>7.8.0</testng.version>
+
+        <selenium.version>4.21.0</selenium.version>
+        <testng.version>7.10.2</testng.version>
         <webdrivermanager.version>6.1.0</webdrivermanager.version>
         <aventstack.version>5.1.1</aventstack.version>
         <apache.poi.version>5.4.0</apache.poi.version>
-        <logging.log4j.version>2.21.1</logging.log4j.version>
-        <jackson.core.version>2.16.0</jackson.core.version>
+        <logging.log4j.version>2.23.1</logging.log4j.version>
+        <jackson.version>2.17.0</jackson.version>
     </properties>
 
     <dependencies>
@@ -88,7 +89,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.core.version}</version>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
     </dependencies>
 </project>

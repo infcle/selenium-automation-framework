@@ -1,204 +1,322 @@
 package com.kernotec.qa.config;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Properties;
-
 /**
- * Clase utilitaria para leer archivos de configuración
- * Implementa Singleton pattern para manejo único de configuraciones
+ * Clase para lectura y gestión de configuraciones desde archivos YAML y Properties. Implementa el
+ * patrón Singleton para asegurar una única instancia de configuración.
  *
  * @author QA Team Kernotec
  * @version 1.0
  */
 public class ConfigReader {
+
     private static final Logger logger = LogManager.getLogger(ConfigReader.class);
-    private static Properties properties;
-    private static ConfigReader configReader;
+    private static ConfigReader instance;
+    private JsonNode yamlConfig;
+    private Properties properties;
+    private final ObjectMapper yamlMapper;
 
-    // Rutas de archivos de configuración
-    private static final String CONFIG_FILE_PATH = "src/test/resources/config/application.properties";
-    private static final String TEST_CONFIG_FILE_PATH = "src/test/resources/config/test-config.properties";
-
+    /**
+     * Constructor privado para implementar Singleton
+     */
     private ConfigReader() {
-        loadProperties();
+        this.yamlMapper = new ObjectMapper(new YAMLFactory());
+        loadConfigurations();
     }
 
     /**
      * Obtiene la instancia única de ConfigReader (Singleton)
+     *
      * @return Instancia de ConfigReader
      */
-    public static ConfigReader getInstance() {
-        if (configReader == null) {
-            synchronized (ConfigReader.class) {
-                if (configReader == null) {
-                    configReader = new ConfigReader();
-                }
-            }
+    public static synchronized ConfigReader getInstance() {
+        if (instance == null) {
+            instance = new ConfigReader();
         }
-        return configReader;
+        return instance;
     }
 
     /**
-     * Carga las propiedades desde los archivos de configuración
+     * Carga las configuraciones desde archivos YAML y Properties
      */
-    private void loadProperties() {
-        properties = new Properties();
-
+    private void loadConfigurations() {
         try {
-            // Cargar configuración principal
-            FileInputStream configFile = new FileInputStream(CONFIG_FILE_PATH);
-            properties.load(configFile);
-            configFile.close();
+            // Cargar configuración principal desde application.yml
+            loadYamlConfig("config/application.yml");
 
-            // Cargar configuración de tests
-            FileInputStream testConfigFile = new FileInputStream(TEST_CONFIG_FILE_PATH);
-            properties.load(testConfigFile);
-            testConfigFile.close();
+            // Cargar configuración de test desde test-config.yml
+            loadYamlConfig("config/test-config.yml");
 
-            logger.info("Archivos de configuración cargados exitosamente");
+            // Cargar properties si existen
+            loadProperties("application.properties");
 
+            logger.info("Configuraciones cargadas exitosamente");
+        } catch (Exception e) {
+            logger.error("Error cargando configuraciones: {}", e.getMessage());
+            throw new RuntimeException("No se pudieron cargar las configuraciones", e);
+        }
+    }
+
+    /**
+     * Carga configuración desde archivo YAML
+     *
+     * @param configPath Ruta del archivo de configuración
+     */
+    private void loadYamlConfig(String configPath) {
+        try (InputStream inputStream = getClass().getClassLoader()
+            .getResourceAsStream(configPath))
+        {
+            if (inputStream != null) {
+                JsonNode config = yamlMapper.readTree(inputStream);
+                if (yamlConfig == null) {
+                    yamlConfig = config;
+                } else {
+                    // Merge configurations (test-config.yml override application.yml)
+                    yamlConfig = mergeJsonNodes(yamlConfig, config);
+                }
+                logger.debug("Configuración YAML cargada desde: {}", configPath);
+            } else {
+                logger.warn("No se encontró el archivo de configuración: {}", configPath);
+            }
         } catch (IOException e) {
-            logger.error("Error cargando archivos de configuración: {}", e.getMessage());
-            throw new RuntimeException("No se pudieron cargar los archivos de configuración", e);
+            logger.error(
+                "Error cargando configuración YAML desde {}: {}", configPath, e.getMessage());
         }
     }
 
     /**
-     * Obtiene el valor de una propiedad
-     * @param key Clave de la propiedad
-     * @return Valor de la propiedad
+     * Carga configuración desde archivo Properties
+     *
+     * @param propertiesPath Ruta del archivo properties
      */
-    public static String getProperty(String key) {
-        getInstance();
-        String value = properties.getProperty(key);
-        if (value == null) {
-            logger.warn("Propiedad '{}' no encontrada en archivos de configuración", key);
+    private void loadProperties(String propertiesPath) {
+        try (InputStream inputStream = getClass().getClassLoader()
+            .getResourceAsStream(propertiesPath))
+        {
+            if (inputStream != null) {
+                properties = new Properties();
+                properties.load(inputStream);
+                logger.debug("Configuración Properties cargada desde: {}", propertiesPath);
+            }
+        } catch (IOException e) {
+            logger.debug("No se encontró archivo Properties: {}", propertiesPath);
         }
-        return value;
     }
 
     /**
-     * Obtiene el valor de una propiedad con valor por defecto
-     * @param key Clave de la propiedad
-     * @param defaultValue Valor por defecto si la propiedad no existe
-     * @return Valor de la propiedad o valor por defecto
+     * Fusiona dos nodos JSON (para override de configuraciones)
      */
-    public static String getProperty(String key, String defaultValue) {
-        getInstance();
-        return properties.getProperty(key, defaultValue);
+    private JsonNode mergeJsonNodes(JsonNode mainNode, JsonNode updateNode) {
+        if (updateNode.isObject() && mainNode.isObject()) {
+            Map<String, JsonNode> mergedFields = new HashMap<>();
+
+            // Agregar todos los campos del nodo principal
+            mainNode.fieldNames()
+                .forEachRemaining(
+                    fieldName -> mergedFields.put(fieldName, mainNode.get(fieldName)));
+
+            // Sobrescribir con campos del nodo de actualización
+            updateNode.fieldNames()
+                .forEachRemaining(
+                    fieldName -> mergedFields.put(fieldName, updateNode.get(fieldName)));
+
+            return yamlMapper.createObjectNode()
+                .setAll(mergedFields);
+        }
+        return updateNode; // Si no son objetos, retornar el nodo de actualización
     }
 
-    // Métodos específicos para propiedades comunes
+    // Métodos públicos para acceder a configuraciones
+    // ================================================
 
     /**
-     * Obtiene la URL base de la aplicación
-     * @return URL base
+     * Obtiene un valor String desde la configuración
+     *
+     * @param key Clave de configuración (ej: "browser.default")
+     * @return Valor String o null si no existe
+     */
+    public static String getString(String key) {
+        return getInstance().getStringValue(key);
+    }
+
+    /**
+     * Obtiene un valor Integer desde la configuración
+     *
+     * @param key Clave de configuración
+     * @return Valor Integer o null si no existe
+     */
+    public static Integer getInt(String key) {
+        String value = getString(key);
+        try {
+            return value != null ? Integer.parseInt(value) : null;
+        } catch (NumberFormatException e) {
+            logger.warn(
+                "No se pudo convertir a entero el valor '{}' para la clave '{}'", value, key);
+            return null;
+        }
+    }
+
+    /**
+     * Obtiene un valor Boolean desde la configuración
+     *
+     * @param key Clave de configuración
+     * @return Valor Boolean o null si no existe
+     */
+    public static Boolean getBoolean(String key) {
+        String value = getString(key);
+        return value != null ? Boolean.parseBoolean(value) : null;
+    }
+
+    /**
+     * Obtiene un mapa de valores desde la configuración
+     *
+     * @param key Clave de configuración
+     * @return Mapa de valores o null si no existe
+     */
+    public static Map<String, Object> getMap(String key) {
+        return getInstance().getMapValue(key);
+    }
+
+    /**
+     * Implementación interna para obtener valor String
+     */
+    private String getStringValue(String key) {
+        // Primero buscar en Properties (más alta prioridad)
+        if (properties != null && properties.containsKey(key)) {
+            return properties.getProperty(key);
+        }
+
+        // Luego buscar en YAML
+        return getValueFromYaml(yamlConfig, key);
+    }
+
+    /**
+     * Implementación interna para obtener valor Map
+     */
+    private Map<String, Object> getMapValue(String key) {
+        JsonNode node = getNodeFromYaml(yamlConfig, key);
+        if (node != null && node.isObject()) {
+            Map<String, Object> map = new HashMap<>();
+            node.fieldNames()
+                .forEachRemaining(fieldName -> {
+                    JsonNode fieldNode = node.get(fieldName);
+                    if (fieldNode.isTextual()) {
+                        map.put(fieldName, fieldNode.asText());
+                    } else if (fieldNode.isNumber()) {
+                        map.put(fieldName, fieldNode.asInt());
+                    } else if (fieldNode.isBoolean()) {
+                        map.put(fieldName, fieldNode.asBoolean());
+                    } else {
+                        map.put(fieldName, fieldNode.toString());
+                    }
+                });
+            return map;
+        }
+        return null;
+    }
+
+    /**
+     * Obtiene un valor desde configuración YAML usando notación de punto
+     */
+    private String getValueFromYaml(JsonNode node, String key) {
+        JsonNode targetNode = getNodeFromYaml(node, key);
+        return targetNode != null ? targetNode.asText() : null;
+    }
+
+    /**
+     * Obtiene un nodo desde configuración YAML usando notación de punto
+     */
+    private JsonNode getNodeFromYaml(JsonNode node, String key) {
+        if (node == null || key == null) {
+            return null;
+        }
+
+        String[] keys = key.split("\\.");
+        JsonNode current = node;
+
+        for (String k : keys) {
+            if (current == null || !current.has(k)) {
+                return null;
+            }
+            current = current.get(k);
+        }
+
+        return current;
+    }
+
+    // Métodos de conveniencia para configuraciones específicas
+    // =======================================================
+
+    /**
+     * Obtiene la URL base del ambiente actual
      */
     public static String getBaseUrl() {
-        return getProperty("app.base.url", "https://example.com");
+        String environment = getString("testing.environment");
+        String baseUrl = getString("environments." + environment + ".baseUrl");
+        return baseUrl != null ? baseUrl : getString("app.baseUrl");
     }
 
     /**
      * Obtiene el browser por defecto
-     * @return Nombre del browser
      */
     public static String getDefaultBrowser() {
-        return getProperty("default.browser", "chrome");
+        return getString("browser.default");
     }
 
     /**
-     * Obtiene el timeout implícito en segundos
-     * @return Timeout en segundos
+     * Obtiene el timeout implícito
      */
     public static int getImplicitWait() {
-        return Integer.parseInt(getProperty("implicit.wait", "10"));
+        Integer timeout = getInt("timeouts.implicit");
+        return timeout != null ? timeout : 10;
     }
 
     /**
-     * Obtiene el timeout explícito en segundos
-     * @return Timeout en segundos
+     * Obtiene el timeout explícito
      */
     public static int getExplicitWait() {
-        return Integer.parseInt(getProperty("explicit.wait", "30"));
+        Integer timeout = getInt("timeouts.explicit");
+        return timeout != null ? timeout : 30;
     }
 
     /**
-     * Obtiene el timeout de carga de página en segundos
-     * @return Timeout en segundos
+     * Obtiene el timeout de carga de página
      */
     public static int getPageLoadTimeout() {
-        return Integer.parseInt(getProperty("page.load.timeout", "60"));
+        Integer timeout = getInt("timeouts.pageLoad");
+        return timeout != null ? timeout : 60;
     }
 
     /**
-     * Determina si se debe ejecutar en modo headless
-     * @return true si headless, false si no
+     * Verifica si el modo headless está habilitado
      */
-    public static boolean isHeadless() {
-        return Boolean.parseBoolean(getProperty("headless.mode", "false"));
+    public static boolean isHeadlessMode() {
+        Boolean headless = getBoolean("browser.headless");
+        return headless != null ? headless : false;
     }
 
     /**
-     * Obtiene el ambiente de ejecución
-     * @return Ambiente (dev, test, prod)
+     * Obtiene el ambiente actual
      */
     public static String getEnvironment() {
-        return getProperty("test.environment", "test");
+        return getString("testing.environment");
     }
 
     /**
-     * Obtiene la URL según el ambiente
-     * @return URL del ambiente
+     * Verifica si las capturas de pantalla están habilitadas
      */
-    public static String getEnvironmentUrl() {
-        String environment = getEnvironment();
-        return getProperty("app.url." + environment, getBaseUrl());
-    }
-
-    /**
-     * Determina si se debe tomar screenshot en fallos
-     * @return true si se debe tomar screenshot
-     */
-    public static boolean takeScreenshotOnFailure() {
-        return Boolean.parseBoolean(getProperty("screenshot.on.failure", "true"));
-    }
-
-    /**
-     * Obtiene el directorio para screenshots
-     * @return Ruta del directorio
-     */
-    public static String getScreenshotDirectory() {
-        return getProperty("screenshot.directory", "test-output/screenshots");
-    }
-
-    /**
-     * Obtiene el directorio para reportes
-     * @return Ruta del directorio
-     */
-    public static String getReportsDirectory() {
-        return getProperty("reports.directory", "test-output/reports");
-    }
-
-    /**
-     * Determina si la ejecución debe ser paralela
-     * @return true si paralela
-     */
-    public static boolean isParallelExecution() {
-        return Boolean.parseBoolean(getProperty("parallel.execution", "false"));
-    }
-
-    /**
-     * Obtiene el número de threads para ejecución paralela
-     * @return Número de threads
-     */
-    public static int getThreadCount() {
-        return Integer.parseInt(getProperty("thread.count", "1"));
+    public static boolean isScreenshotsEnabled() {
+        Boolean enabled = getBoolean("features.screenshots");
+        return enabled != null ? enabled : true;
     }
 }

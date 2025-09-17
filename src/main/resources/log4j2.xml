@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <!-- Propiedades para configuración de logging -->
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n</Property>
+        <Property name="LOG_FILE_PATH">test-output/logs</Property>
+        <Property name="LOG_FILE_NAME">application.log</Property>
+        <Property name="MAX_FILE_SIZE">10MB</Property>
+        <Property name="MAX_FILES">5</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- Console Appender para mostrar logs en consola -->
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
+
+        <!-- File Appender para logs generales -->
+        <RollingFile name="FileAppender" 
+                     fileName="${LOG_FILE_PATH}/${LOG_FILE_NAME}"
+                     filePattern="${LOG_FILE_PATH}/${LOG_FILE_NAME}-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="${MAX_FILE_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${MAX_FILES}" compressionLevel="9"/>
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+        </RollingFile>
+
+        <!-- File Appender específico para errores -->
+        <RollingFile name="ErrorFileAppender" 
+                     fileName="${LOG_FILE_PATH}/error.log"
+                     filePattern="${LOG_FILE_PATH}/error-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="${MAX_FILE_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${MAX_FILES}" compressionLevel="9"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+        </RollingFile>
+
+        <!-- File Appender específico para Selenium -->
+        <RollingFile name="SeleniumFileAppender" 
+                     fileName="${LOG_FILE_PATH}/selenium.log"
+                     filePattern="${LOG_FILE_PATH}/selenium-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="${MAX_FILE_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${MAX_FILES}" compressionLevel="9"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </RollingFile>
+
+        <!-- File Appender para reportes de test -->
+        <RollingFile name="TestReportAppender" 
+                     fileName="${LOG_FILE_PATH}/test-reports.log"
+                     filePattern="${LOG_FILE_PATH}/test-reports-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="${MAX_FILE_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="${MAX_FILES}" compressionLevel="9"/>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </RollingFile>
+
+        <!-- Async Appender para mejor rendimiento -->
+        <AsyncAppender name="AsyncFileAppender" bufferSize="1024" includeLocation="true">
+            <AppenderRef ref="FileAppender"/>
+            <AppenderRef ref="ErrorFileAppender"/>
+        </AsyncAppender>
+    </Appenders>
+
+    <Loggers>
+        <!-- Logger específico para el framework de automatización -->
+        <Logger name="com.kernotec.qa" level="DEBUG" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="AsyncFileAppender"/>
+            <AppenderRef ref="TestReportAppender"/>
+        </Logger>
+
+        <!-- Logger específico para Selenium WebDriver -->
+        <Logger name="org.openqa.selenium" level="INFO" additivity="false">
+            <AppenderRef ref="SeleniumFileAppender"/>
+            <AppenderRef ref="ConsoleAppender"/>
+        </Logger>
+
+        <!-- Logger para WebDriverManager -->
+        <Logger name="io.github.bonigarcia.wdm" level="WARN" additivity="false">
+            <AppenderRef ref="SeleniumFileAppender"/>
+        </Logger>
+
+        <!-- Logger para TestNG -->
+        <Logger name="org.testng" level="INFO" additivity="false">
+            <AppenderRef ref="TestReportAppender"/>
+            <AppenderRef ref="ConsoleAppender"/>
+        </Logger>
+
+        <!-- Logger para Apache POI (Excel) -->
+        <Logger name="org.apache.poi" level="WARN" additivity="false">
+            <AppenderRef ref="FileAppender"/>
+        </Logger>
+
+        <!-- Logger para Jackson (YAML/JSON) -->
+        <Logger name="com.fasterxml.jackson" level="WARN" additivity="false">
+            <AppenderRef ref="FileAppender"/>
+        </Logger>
+
+        <!-- Logger para HTTP clients -->
+        <Logger name="org.apache.http" level="WARN" additivity="false">
+            <AppenderRef ref="FileAppender"/>
+        </Logger>
+
+        <!-- Logger para configuración específica de testing -->
+        <Logger name="com.kernotec.qa.tests" level="DEBUG" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="AsyncFileAppender"/>
+            <AppenderRef ref="TestReportAppender"/>
+        </Logger>
+
+        <!-- Logger para Page Objects -->
+        <Logger name="com.kernotec.qa.pages" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="AsyncFileAppender"/>
+        </Logger>
+
+        <!-- Logger para utilidades -->
+        <Logger name="com.kernotec.qa.utils" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="AsyncFileAppender"/>
+        </Logger>
+
+        <!-- Logger para configuración -->
+        <Logger name="com.kernotec.qa.config" level="DEBUG" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="AsyncFileAppender"/>
+        </Logger>
+
+        <!-- Logger para datos de prueba -->
+        <Logger name="com.kernotec.qa.data" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="AsyncFileAppender"/>
+        </Logger>
+
+        <!-- Logger raíz -->
+        <Root level="INFO">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="AsyncFileAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>
