@@ -2,7 +2,6 @@ package com.kernotec.qa.tests;
 
 import com.kernotec.qa.config.ConfigReader;
 import com.kernotec.qa.config.DriverManager;
-import com.kernotec.qa.config.YamlConfigReader;
 import com.kernotec.qa.utils.ScreenshotUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -135,8 +134,8 @@ public class BaseTest {
         logger.info("- Environment: {}", ConfigReader.getEnvironment());
         logger.info("- Base URL: {}", ConfigReader.getBaseUrl());
         logger.info("- Headless: {}", ConfigReader.isHeadlessMode());
-        logger.info("- Parallel execution: {}", YamlConfigReader.isParallelExecution());
-        logger.info("- Thread count: {}", YamlConfigReader.getThreadCount());
+        logger.info("- Parallel execution: {}", ConfigReader.isParallelExecution());
+        logger.info("- Thread count: {}", ConfigReader.getThreadCount());
     }
 
     /**
@@ -153,9 +152,9 @@ public class BaseTest {
     private void createTestDirectories() {
         try {
             java.nio.file.Files.createDirectories(
-                java.nio.file.Paths.get(YamlConfigReader.getScreenshotDirectory()));
+                java.nio.file.Paths.get(ConfigReader.getScreenshotDirectory()));
             java.nio.file.Files.createDirectories(
-                java.nio.file.Paths.get(YamlConfigReader.getReportsDirectory()));
+                java.nio.file.Paths.get(ConfigReader.getReportsDirectory()));
 
             logger.debug("Directorios de test creados");
         } catch (Exception e) {
@@ -237,7 +236,7 @@ public class BaseTest {
      * @throws RuntimeException si no está en el ambiente correcto
      */
     protected void validateEnvironment(String expectedEnvironment) {
-        String currentEnv = YamlConfigReader.getEnvironment();
+        String currentEnv = ConfigReader.getEnvironment();
         if (!currentEnv.equalsIgnoreCase(expectedEnvironment)) {
             throw new RuntimeException(
                 String.format("Test requiere ambiente '%s' pero está ejecutando en '%s'",

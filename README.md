@@ -67,7 +67,9 @@ selenium-automation-framework/
 
 ## 📋 Descripción del Proyecto
 
-Framework de automatización web desarrollado con Selenium WebDriver, TestNG y Java 17 para pruebas automatizadas escalables y mantenibles. Implementa patrones de diseño estándar de la industria y mejores prácticas para testing de aplicaciones web.
+Framework de automatización web desarrollado con Selenium WebDriver, TestNG y Java 17 para pruebas
+automatizadas escalables y mantenibles. Implementa patrones de diseño estándar de la industria y
+mejores prácticas para testing de aplicaciones web.
 
 ---
 
@@ -222,6 +224,7 @@ selenium-automation-framework/
 ## ⚙️ Configuración
 
 ### Archivos de Configuración
+
 ```
     src/test/resources/
     ├── config/
@@ -234,16 +237,17 @@ selenium-automation-framework/
 ```
 
 ### Variables de Entorno
+
 ```yml
-# application.yml
+# yml
 app:
-    url: https://example.com
-    browser: chrome
-    headless: false
+  url: https://example.com
+  browser: chrome
+  headless: false
 
 timeouts:
-    implicit: 10
-    explicit: 30
+  implicit: 10
+  explicit: 30
 ```
 
 ---

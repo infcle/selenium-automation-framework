@@ -196,10 +196,30 @@ public class ExcelUtils {
     }
 
     /**
-     * Lee datos de test desde el archivo de configuración por defecto
+     * Lee datos de test desde el archivo de configuración por defecto CORREGIDO: Usa la nueva
+     * estructura de configuración
      */
     public static List<Map<String, String>> readTestData(String sheetName) {
-        String testDataPath = ConfigReader.getString("testing.dataProvider.path") + "users.xlsx";
-        return readExcelData(testDataPath, sheetName);
+        String testDataPath = ConfigReader.getString(
+            "testData.path", "src/test/resources/testdata/");
+        String fileName = ConfigReader.getString("testData.files.userCredentials", "users.xlsx");
+        String fullPath = testDataPath + fileName;
+        return readExcelData(fullPath, sheetName);
+    }
+
+    /**
+     * Lee datos específicos de usuarios para testing
+     */
+    public static List<Map<String, String>> readUserTestData() {
+        return readTestData("Users");
+    }
+
+    /**
+     * Lee datos específicos de escenarios de test
+     */
+    public static List<Map<String, String>> readScenarioTestData(String sheetName) {
+        String testDataPath = ConfigReader.getString(
+            "testData.path", "src/test/resources/testdata/");
+        return readExcelData(testDataPath + "test-scenarios.xlsx", sheetName);
     }
 }

@@ -9,13 +9,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Clase para lectura y gestión de configuraciones desde archivos YAML y Properties. Implementa el
- * patrón Singleton para asegurar una única instancia de configuración.
+ * Clase unificada para lectura y gestión de configuraciones desde archivos YAML. Implementa el
+ * patrón Singleton para asegurar una única instancia de configuración. Consolida toda la
+ * funcionalidad de configuración en una sola clase.
  *
  * @author QA Team Kernotec
  * @version 1.0
@@ -25,7 +25,6 @@ public class ConfigReader {
     private static final Logger logger = LogManager.getLogger(ConfigReader.class);
     private static ConfigReader instance;
     private JsonNode yamlConfig;
-    private Properties properties;
     private final ObjectMapper yamlMapper;
 
     /**
@@ -49,20 +48,17 @@ public class ConfigReader {
     }
 
     /**
-     * Carga las configuraciones desde archivos YAML y Properties
+     * Carga las configuraciones desde archivos YAML
      */
     private void loadConfigurations() {
         try {
             // Cargar configuración principal desde application.yml
             loadYamlConfig("config/application.yml");
 
-            // Cargar configuración de test desde test-config.yml
+            // Cargar configuración de test desde test-config.yml (override)
             loadYamlConfig("config/test-config.yml");
 
-            // Cargar properties si existen
-            loadProperties("application.properties");
-
-            logger.info("Configuraciones cargadas exitosamente");
+            logger.info("Configuraciones YAML cargadas exitosamente");
         } catch (Exception e) {
             logger.error("Error cargando configuraciones: {}", e.getMessage());
             throw new RuntimeException("No se pudieron cargar las configuraciones", e);
@@ -71,8 +67,6 @@ public class ConfigReader {
 
     /**
      * Carga configuración desde archivo YAML
-     *
-     * @param configPath Ruta del archivo de configuración
      */
     private void loadYamlConfig(String configPath) {
         try (InputStream inputStream = getClass().getClassLoader()
@@ -88,30 +82,11 @@ public class ConfigReader {
                 }
                 logger.debug("Configuración YAML cargada desde: {}", configPath);
             } else {
-                logger.warn("No se encontró el archivo de configuración: {}", configPath);
+                logger.debug("No se encontró el archivo de configuración: {}", configPath);
             }
         } catch (IOException e) {
             logger.error(
                 "Error cargando configuración YAML desde {}: {}", configPath, e.getMessage());
-        }
-    }
-
-    /**
-     * Carga configuración desde archivo Properties
-     *
-     * @param propertiesPath Ruta del archivo properties
-     */
-    private void loadProperties(String propertiesPath) {
-        try (InputStream inputStream = getClass().getClassLoader()
-            .getResourceAsStream(propertiesPath))
-        {
-            if (inputStream != null) {
-                properties = new Properties();
-                properties.load(inputStream);
-                logger.debug("Configuración Properties cargada desde: {}", propertiesPath);
-            }
-        } catch (IOException e) {
-            logger.debug("No se encontró archivo Properties: {}", propertiesPath);
         }
     }
 
@@ -122,7 +97,7 @@ public class ConfigReader {
         if (updateNode.isObject() && mainNode.isObject()) {
             Map<String, JsonNode> mergedFields = new HashMap<>();
 
-            // Agregar todos los campos del nodo principal
+            // Agregar campos del nodo principal
             mainNode.fieldNames()
                 .forEachRemaining(
                     fieldName -> mergedFields.put(fieldName, mainNode.get(fieldName)));
@@ -135,11 +110,12 @@ public class ConfigReader {
             return yamlMapper.createObjectNode()
                 .setAll(mergedFields);
         }
-        return updateNode; // Si no son objetos, retornar el nodo de actualización
+        return updateNode;
     }
 
-    // Métodos públicos para acceder a configuraciones
-    // ================================================
+    // ===================================================================
+    // MÉTODOS PÚBLICOS ESTÁTICOS PARA ACCEDER A CONFIGURACIONES
+    // ===================================================================
 
     /**
      * Obtiene un valor String desde la configuración
@@ -152,10 +128,15 @@ public class ConfigReader {
     }
 
     /**
+     * Obtiene un valor String con valor por defecto
+     */
+    public static String getString(String key, String defaultValue) {
+        String value = getString(key);
+        return value != null ? value : defaultValue;
+    }
+
+    /**
      * Obtiene un valor Integer desde la configuración
-     *
-     * @param key Clave de configuración
-     * @return Valor Integer o null si no existe
      */
     public static Integer getInt(String key) {
         String value = getString(key);
@@ -169,10 +150,15 @@ public class ConfigReader {
     }
 
     /**
+     * Obtiene un valor Integer con valor por defecto
+     */
+    public static int getInt(String key, int defaultValue) {
+        Integer value = getInt(key);
+        return value != null ? value : defaultValue;
+    }
+
+    /**
      * Obtiene un valor Boolean desde la configuración
-     *
-     * @param key Clave de configuración
-     * @return Valor Boolean o null si no existe
      */
     public static Boolean getBoolean(String key) {
         String value = getString(key);
@@ -180,25 +166,35 @@ public class ConfigReader {
     }
 
     /**
+     * Obtiene un valor Boolean con valor por defecto
+     */
+    public static boolean getBoolean(String key, boolean defaultValue) {
+        Boolean value = getBoolean(key);
+        return value != null ? value : defaultValue;
+    }
+
+    /**
      * Obtiene un mapa de valores desde la configuración
-     *
-     * @param key Clave de configuración
-     * @return Mapa de valores o null si no existe
      */
     public static Map<String, Object> getMap(String key) {
         return getInstance().getMapValue(key);
     }
 
     /**
+     * Obtiene una lista de strings desde la configuración
+     */
+    public static List<String> getList(String key) {
+        return getInstance().getListValue(key);
+    }
+
+    // ===================================================================
+    // MÉTODOS INTERNOS DE IMPLEMENTACIÓN
+    // ===================================================================
+
+    /**
      * Implementación interna para obtener valor String
      */
     private String getStringValue(String key) {
-        // Primero buscar en Properties (más alta prioridad)
-        if (properties != null && properties.containsKey(key)) {
-            return properties.getProperty(key);
-        }
-
-        // Luego buscar en YAML
         return getValueFromYaml(yamlConfig, key);
     }
 
@@ -218,6 +214,10 @@ public class ConfigReader {
                         map.put(fieldName, fieldNode.asInt());
                     } else if (fieldNode.isBoolean()) {
                         map.put(fieldName, fieldNode.asBoolean());
+                    } else if (fieldNode.isArray()) {
+                        List<String> list = new ArrayList<>();
+                        fieldNode.forEach(element -> list.add(element.asText()));
+                        map.put(fieldName, list);
                     } else {
                         map.put(fieldName, fieldNode.toString());
                     }
@@ -225,6 +225,20 @@ public class ConfigReader {
             return map;
         }
         return null;
+    }
+
+    /**
+     * Implementación interna para obtener valor List
+     */
+    private List<String> getListValue(String key) {
+        JsonNode node = getNodeFromYaml(yamlConfig, key);
+        List<String> list = new ArrayList<>();
+
+        if (node != null && node.isArray()) {
+            node.forEach(element -> list.add(element.asText()));
+        }
+
+        return list;
     }
 
     /**
@@ -256,93 +270,127 @@ public class ConfigReader {
         return current;
     }
 
-    // Métodos de conveniencia para configuraciones específicas
-    // =======================================================
+    // ===================================================================
+    // MÉTODOS DE CONVENIENCIA PARA CONFIGURACIONES ESPECÍFICAS
+    // ===================================================================
 
     /**
      * Obtiene la URL base del ambiente actual
      */
     public static String getBaseUrl() {
-        String environment = getString("testing.environment");
-        String baseUrl = getString("environments." + environment + ".baseUrl");
-        return baseUrl != null ? baseUrl : getString("app.baseUrl");
+        String environment = getEnvironment();
+        String environmentUrl = getString("environments." + environment + ".baseUrl");
+        return environmentUrl != null ? environmentUrl : getString(
+            "app.baseUrl", "https://test-app.company.com");
     }
 
     /**
      * Obtiene el browser por defecto
      */
     public static String getDefaultBrowser() {
-        return getString("browser.default");
+        return getString("browser.default", "chrome");
     }
 
     /**
      * Obtiene el timeout implícito
      */
     public static int getImplicitWait() {
-        Integer timeout = getInt("timeouts.implicit");
-        return timeout != null ? timeout : 10;
-    }
-
-    /**
-     * Obtiene las opciones de Chrome desde la configuración
-     */
-    public static List<String> getChromeOptions() {
-        // Implementar lógica para obtener opciones de Chrome desde YAML
-        Map<String, Object> browserConfig = getMap("browser.chrome");
-        if (browserConfig != null && browserConfig.containsKey("options")) {
-            return (List<String>) browserConfig.get("options");
-        }
-        return new ArrayList<>();
-    }
-
-    public static Map<String, Object> getFirefoxPreferences() {
-        return getMap("browser.firefox.preferences");
+        return getInt("timeouts.implicit", 10);
     }
 
     /**
      * Obtiene el timeout explícito
      */
     public static int getExplicitWait() {
-        Integer timeout = getInt("timeouts.explicit");
-        return timeout != null ? timeout : 30;
+        return getInt("timeouts.explicit", 30);
     }
 
     /**
      * Obtiene el timeout de carga de página
      */
     public static int getPageLoadTimeout() {
-        Integer timeout = getInt("timeouts.pageLoad");
-        return timeout != null ? timeout : 60;
+        return getInt("timeouts.pageLoad", 60);
+    }
+
+    /**
+     * Obtiene el timeout de script
+     */
+    public static int getScriptTimeout() {
+        return getInt("timeouts.script", 30);
+    }
+
+    /**
+     * Obtiene el intervalo de polling
+     */
+    public static int getPollingInterval() {
+        return getInt("timeouts.polling", 500);
     }
 
     /**
      * Verifica si el modo headless está habilitado
      */
     public static boolean isHeadlessMode() {
-        Boolean headless = getBoolean("browser.headless");
-        return headless != null ? headless : false;
+        return getBoolean("browser.headless", false);
     }
 
     /**
      * Obtiene el ambiente actual
      */
     public static String getEnvironment() {
-        return getString("testing.environment");
+        return getString("testing.environment", "test");
     }
 
     /**
      * Verifica si las capturas de pantalla están habilitadas
      */
     public static boolean isScreenshotsEnabled() {
-        Boolean enabled = getBoolean("features.screenshots");
-        return enabled != null ? enabled : true;
+        return getBoolean("features.screenshots", true);
+    }
+
+    /**
+     * Verifica si se deben tomar capturas en fallos
+     */
+    public static boolean takeScreenshotOnFailure() {
+        return getBoolean("screenshots.onFailure", true);
+    }
+
+    /**
+     * Obtiene el directorio de capturas
+     */
+    public static String getScreenshotDirectory() {
+        return getString("screenshots.directory", "test-output/screenshots");
+    }
+
+    /**
+     * Obtiene el directorio de reportes
+     */
+    public static String getReportsDirectory() {
+        return getString("reports.directory", "test-output/reports");
+    }
+
+    /**
+     * Obtiene el directorio de logs
+     */
+    public static String getLogsDirectory() {
+        return getString("logging.directory", "test-output/logs");
+    }
+
+    /**
+     * Verifica si la ejecución debe ser paralela
+     */
+    public static boolean isParallelExecution() {
+        return getBoolean("testing.parallel.enabled", false);
+    }
+
+    /**
+     * Obtiene el número de threads para ejecución paralela
+     */
+    public static int getThreadCount() {
+        return getInt("testing.parallel.threadCount", 1);
     }
 
     /**
      * Obtiene el username para un rol específico
-     *
-     * @param role Rol del usuario
-     * @return Username o null si no existe
      */
     public static String getUsername(String role) {
         return getString("users." + role + ".username");
@@ -350,11 +398,119 @@ public class ConfigReader {
 
     /**
      * Obtiene el password para un rol específico
-     *
-     * @param role Rol del usuario
-     * @return Password o null si no existe
      */
     public static String getPassword(String role) {
         return getString("users." + role + ".password");
+    }
+
+    /**
+     * Obtiene las credenciales de un usuario específico
+     */
+    public static Map<String, Object> getUserCredentials(String role) {
+        return getMap("users." + role);
+    }
+
+    // ===================================================================
+    // MÉTODOS ESPECÍFICOS PARA BROWSERS
+    // ===================================================================
+
+    /**
+     * Obtiene las opciones de Chrome desde la configuración
+     */
+    public static List<String> getChromeOptions() {
+        return getList("browser.chrome.options");
+    }
+
+    /**
+     * Obtiene las preferencias de Firefox desde la configuración
+     */
+    public static Map<String, Object> getFirefoxPreferences() {
+        return getMap("browser.firefox.preferences");
+    }
+
+    /**
+     * Obtiene las opciones de Edge desde la configuración
+     */
+    public static List<String> getEdgeOptions() {
+        return getList("browser.edge.options");
+    }
+
+    // ===================================================================
+    // MÉTODOS PARA FEATURES Y CONFIGURACIONES AVANZADAS
+    // ===================================================================
+
+    /**
+     * Verifica si una característica está habilitada
+     */
+    public static boolean isFeatureEnabled(String feature) {
+        return getBoolean("features." + feature, false);
+    }
+
+    /**
+     * Obtiene la configuración de API
+     */
+    public static Map<String, Object> getApiConfig() {
+        return getMap("api");
+    }
+
+    /**
+     * Obtiene la URL base de la API
+     */
+    public static String getApiBaseUrl() {
+        String environment = getEnvironment();
+        String apiUrl = getString("environments." + environment + ".apiUrl");
+        return apiUrl != null ? apiUrl : getString("api.baseUrl");
+    }
+
+    /**
+     * Obtiene el timeout de API
+     */
+    public static int getApiTimeout() {
+        return getInt("api.timeout", 30);
+    }
+
+    /**
+     * Obtiene el número de reintentos para elementos
+     */
+    public static int getElementRetryCount() {
+        return getInt("advanced.element.retry.count", 3);
+    }
+
+    /**
+     * Obtiene el delay entre reintentos para elementos
+     */
+    public static int getElementRetryDelay() {
+        return getInt("advanced.element.retry.delay", 1000);
+    }
+
+    /**
+     * Recarga la configuración YAML (útil para testing)
+     */
+    public static void reloadConfiguration() {
+        instance = null;
+        getInstance();
+        logger.info("Configuración recargada");
+    }
+
+    /**
+     * Verifica si la configuración está cargada
+     */
+    public static boolean isConfigurationLoaded() {
+        return getInstance().yamlConfig != null;
+    }
+
+    /**
+     * Imprime la configuración actual para debugging
+     */
+    public static void printCurrentConfig() {
+        logger.info("=== CONFIGURACIÓN ACTUAL ===");
+        logger.info("Environment: {}", getEnvironment());
+        logger.info("Base URL: {}", getBaseUrl());
+        logger.info("Default Browser: {}", getDefaultBrowser());
+        logger.info("Headless: {}", isHeadlessMode());
+        logger.info("Parallel Execution: {}", isParallelExecution());
+        logger.info("Thread Count: {}", getThreadCount());
+        logger.info("Screenshots Enabled: {}", isScreenshotsEnabled());
+        logger.info("===========================");
     }
 }

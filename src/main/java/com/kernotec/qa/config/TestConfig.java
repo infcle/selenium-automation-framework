@@ -3,9 +3,9 @@ package com.kernotec.qa.config;
 import java.util.Map;
 
 /**
- * Clase de configuración de tests que proporciona acceso simplificado a las propiedades de prueba
- * definidas en 'application.yml'. Esta clase actúa como una capa de abstracción sobre ConfigReader
- * para una mejor legibilidad del código de prueba.
+ * Clase wrapper simplificada que proporciona acceso fácil a las configuraciones más comunes. Actúa
+ * como una capa de conveniencia sobre ConfigReader para tests. Esta versión elimina duplicación y
+ * se enfoca en métodos útiles para testing.
  *
  * @author QA Team Kernotec
  * @version 1.0
@@ -13,126 +13,366 @@ import java.util.Map;
 public final class TestConfig {
 
     /**
-     * Constructor privado para evitar la instanciación de la clase utilitaria.
+     * Constructor privado para evitar instanciación
      */
     private TestConfig() {
+        throw new UnsupportedOperationException("TestConfig es una clase utilitaria");
     }
 
-    // Métodos para acceder a la configuración del entorno y la ejecución
-    // ----------------------------------------------------------------------
+    // ===================================================================
+    // MÉTODOS DE CONFIGURACIÓN DE ENTORNO Y EJECUCIÓN
+    // ===================================================================
 
     /**
-     * Obtiene el entorno de ejecución de las pruebas.
+     * Obtiene el entorno de ejecución actual
      *
-     * @return El nombre del entorno (e.g., "dev", "test", "prod").
+     * @return Nombre del entorno (dev, test, staging, prod)
      */
     public static String getEnvironment() {
-        return ConfigReader.getString("testing.environment");
+        return ConfigReader.getEnvironment();
     }
 
     /**
-     * Obtiene la URL base de la aplicación para el entorno actual.
+     * Obtiene la URL base para el entorno actual
      *
-     * @return La URL completa.
+     * @return URL base de la aplicación
      */
     public static String getBaseUrl() {
         return ConfigReader.getBaseUrl();
     }
 
     /**
-     * Obtiene el navegador por defecto para la ejecución.
+     * Obtiene la URL base de la API para el entorno actual
      *
-     * @return El nombre del navegador.
+     * @return URL base de la API
      */
-    public static String getBrowser() {
+    public static String getApiBaseUrl() {
+        return ConfigReader.getApiBaseUrl();
+    }
+
+    // ===================================================================
+    // MÉTODOS DE CONFIGURACIÓN DE BROWSER
+    // ===================================================================
+
+    /**
+     * Obtiene el browser por defecto
+     *
+     * @return Nombre del browser (chrome, firefox, edge)
+     */
+    public static String getDefaultBrowser() {
         return ConfigReader.getDefaultBrowser();
     }
 
     /**
-     * Determina si la ejecución se realizará en modo headless.
+     * Verifica si debe ejecutarse en modo headless
      *
-     * @return true si el modo headless está activado, false de lo contrario.
+     * @return true si headless está activado
      */
     public static boolean isHeadlessMode() {
-        return ConfigReader.getBoolean("browser.headless");
+        return ConfigReader.isHeadlessMode();
     }
 
-    // Métodos para acceder a los timeouts
-    // ----------------------------------------------------------------------
+    // ===================================================================
+    // MÉTODOS DE TIMEOUTS
+    // ===================================================================
 
     /**
-     * Obtiene el tiempo de espera explícito en segundos.
+     * Obtiene el timeout implícito en segundos
      *
-     * @return El timeout explícito.
+     * @return Timeout implícito
+     */
+    public static int getImplicitTimeout() {
+        return ConfigReader.getImplicitWait();
+    }
+
+    /**
+     * Obtiene el timeout explícito en segundos
+     *
+     * @return Timeout explícito
      */
     public static int getExplicitTimeout() {
         return ConfigReader.getExplicitWait();
     }
 
     /**
-     * Obtiene el tiempo de espera implícito en segundos.
+     * Obtiene el timeout de carga de página en segundos
      *
-     * @return El timeout implícito.
+     * @return Timeout de página
      */
-    public static int getImplicitTimeout() {
-        return ConfigReader.getImplicitWait();
-    }
-
-    // Métodos para acceder a los datos de usuario
-    // ----------------------------------------------------------------------
-
-    /**
-     * Obtiene las credenciales del usuario de prueba por su rol.
-     *
-     * @param userRole El rol del usuario (e.g., "admin", "test").
-     * @return Un mapa con las credenciales del usuario, o null si el rol no existe.
-     */
-    public static Map<String, Object> getUserCredentials(String userRole) {
-        return ConfigReader.getMap("users." + userRole);
+    public static int getPageLoadTimeout() {
+        return ConfigReader.getPageLoadTimeout();
     }
 
     /**
-     * Obtiene el nombre de usuario para un rol específico.
+     * Obtiene el timeout de script en segundos
      *
-     * @param userRole El rol del usuario.
-     * @return El nombre de usuario, o null si no se encuentra.
+     * @return Timeout de script
      */
-    public static String getUsername(String userRole) {
-        Map<String, Object> user = getUserCredentials(userRole);
-        return (user != null) ? (String) user.get("username") : null;
+    public static int getScriptTimeout() {
+        return ConfigReader.getScriptTimeout();
+    }
+
+    // ===================================================================
+    // MÉTODOS DE USUARIOS DE PRUEBA
+    // ===================================================================
+
+    /**
+     * Obtiene credenciales completas de un usuario por su rol
+     *
+     * @param role Rol del usuario (admin, manager, employee, test)
+     * @return Mapa con credenciales y información del usuario
+     */
+    public static Map<String, Object> getUserCredentials(String role) {
+        return ConfigReader.getUserCredentials(role);
     }
 
     /**
-     * Obtiene la contraseña para un rol de usuario específico.
+     * Obtiene el username de un usuario por su rol
      *
-     * @param userRole El rol del usuario.
-     * @return La contraseña, o null si no se encuentra.
+     * @param role Rol del usuario
+     * @return Username del usuario
      */
-    public static String getPassword(String userRole) {
-        Map<String, Object> user = getUserCredentials(userRole);
-        return (user != null) ? (String) user.get("password") : null;
+    public static String getUsername(String role) {
+        return ConfigReader.getUsername(role);
     }
 
-    // Métodos para acceder a las feature flags
-    // ----------------------------------------------------------------------
+    /**
+     * Obtiene la contraseña de un usuario por su rol
+     *
+     * @param role Rol del usuario
+     * @return Contraseña del usuario
+     */
+    public static String getPassword(String role) {
+        return ConfigReader.getPassword(role);
+    }
+
+    // Métodos de conveniencia para usuarios específicos
+
+    public static String getAdminUsername() {
+        return getUsername("admin");
+    }
+
+    public static String getAdminPassword() {
+        return getPassword("admin");
+    }
+
+    public static String getTestUsername() {
+        return getUsername("test");
+    }
+
+    public static String getTestPassword() {
+        return getPassword("test");
+    }
+
+    // ===================================================================
+    // MÉTODOS DE CONFIGURACIÓN DE EJECUCIÓN
+    // ===================================================================
 
     /**
-     * Determina si las capturas de pantalla están habilitadas.
+     * Verifica si la ejecución paralela está habilitada
      *
-     * @return true si están habilitadas.
+     * @return true si está habilitada
+     */
+    public static boolean isParallelExecution() {
+        return ConfigReader.isParallelExecution();
+    }
+
+    /**
+     * Obtiene el número de threads para ejecución paralela
+     *
+     * @return Número de threads
+     */
+    public static int getThreadCount() {
+        return ConfigReader.getThreadCount();
+    }
+
+    /**
+     * Obtiene el número máximo de reintentos para tests fallidos
+     *
+     * @return Número de reintentos
+     */
+    public static int getRetryCount() {
+        return ConfigReader.getInt("testing.retry.failedTests", 1);
+    }
+
+    // ===================================================================
+    // MÉTODOS DE CONFIGURACIÓN DE FEATURES
+    // ===================================================================
+
+    /**
+     * Verifica si las capturas de pantalla están habilitadas
+     *
+     * @return true si están habilitadas
      */
     public static boolean isScreenshotsEnabled() {
-        return ConfigReader.getBoolean("features.screenshots");
+        return ConfigReader.isScreenshotsEnabled();
     }
 
     /**
-     * Determina si el testing de API está habilitado.
+     * Verifica si se deben tomar capturas en fallos
      *
-     * @return true si el testing de API está habilitado.
+     * @return true si se deben tomar capturas en fallos
      */
-    public static boolean isApiTestingEnabled() {
-        return ConfigReader.getBoolean("features.apiTesting");
+    public static boolean takeScreenshotOnFailure() {
+        return ConfigReader.takeScreenshotOnFailure();
     }
 
-    // Y así sucesivamente con más métodos para otras secciones del YAML
+    /**
+     * Verifica si el testing de API está habilitado
+     *
+     * @return true si API testing está habilitado
+     */
+    public static boolean isApiTestingEnabled() {
+        return ConfigReader.isFeatureEnabled("apiTesting");
+    }
+
+    /**
+     * Verifica si el cross-browser testing está habilitado
+     *
+     * @return true si está habilitado
+     */
+    public static boolean isCrossBrowserTestingEnabled() {
+        return ConfigReader.isFeatureEnabled("crossBrowserTesting");
+    }
+
+    /**
+     * Verifica si una feature específica está habilitada
+     *
+     * @param featureName Nombre de la feature
+     * @return true si está habilitada
+     */
+    public static boolean isFeatureEnabled(String featureName) {
+        return ConfigReader.isFeatureEnabled(featureName);
+    }
+
+    // ===================================================================
+    // MÉTODOS DE CONFIGURACIÓN DE DIRECTORIOS
+    // ===================================================================
+
+    /**
+     * Obtiene el directorio de capturas de pantalla
+     *
+     * @return Ruta del directorio
+     */
+    public static String getScreenshotDirectory() {
+        return ConfigReader.getScreenshotDirectory();
+    }
+
+    /**
+     * Obtiene el directorio de reportes
+     *
+     * @return Ruta del directorio
+     */
+    public static String getReportsDirectory() {
+        return ConfigReader.getReportsDirectory();
+    }
+
+    /**
+     * Obtiene el directorio de logs
+     *
+     * @return Ruta del directorio
+     */
+    public static String getLogsDirectory() {
+        return ConfigReader.getLogsDirectory();
+    }
+
+    // ===================================================================
+    // MÉTODOS DE CONFIGURACIÓN AVANZADA
+    // ===================================================================
+
+    /**
+     * Obtiene el número de reintentos para elementos
+     *
+     * @return Número de reintentos
+     */
+    public static int getElementRetryCount() {
+        return ConfigReader.getElementRetryCount();
+    }
+
+    /**
+     * Obtiene el delay entre reintentos para elementos
+     *
+     * @return Delay en milisegundos
+     */
+    public static int getElementRetryDelay() {
+        return ConfigReader.getElementRetryDelay();
+    }
+
+    /**
+     * Obtiene el intervalo de polling para waits
+     *
+     * @return Intervalo en milisegundos
+     */
+    public static int getPollingInterval() {
+        return ConfigReader.getPollingInterval();
+    }
+
+    /**
+     * Obtiene el timeout de API
+     *
+     * @return Timeout en segundos
+     */
+    public static int getApiTimeout() {
+        return ConfigReader.getApiTimeout();
+    }
+
+    // ===================================================================
+    // MÉTODOS DE UTILIDAD
+    // ===================================================================
+
+    /**
+     * Imprime la configuración actual para debugging
+     */
+    public static void printConfiguration() {
+        ConfigReader.printCurrentConfig();
+    }
+
+    /**
+     * Verifica si la configuración está completamente cargada
+     *
+     * @return true si está cargada
+     */
+    public static boolean isConfigurationLoaded() {
+        return ConfigReader.isConfigurationLoaded();
+    }
+
+    /**
+     * Obtiene información resumida de la configuración actual
+     *
+     * @return String con información de configuración
+     */
+    public static String getConfigurationSummary() {
+        return String.format(
+            "Environment: %s | Browser: %s | Headless: %s | Parallel: %s | Screenshots: %s",
+            getEnvironment(),
+            getDefaultBrowser(),
+            isHeadlessMode(),
+            isParallelExecution(),
+            isScreenshotsEnabled()
+        );
+    }
+
+    /**
+     * Valida que la configuración esencial esté presente
+     *
+     * @throws RuntimeException si falta configuración crítica
+     */
+    public static void validateEssentialConfiguration() {
+        if (getBaseUrl() == null || getBaseUrl().isEmpty()) {
+            throw new RuntimeException(
+                "URL base no configurada para el ambiente: " + getEnvironment());
+        }
+
+        if (getDefaultBrowser() == null || getDefaultBrowser().isEmpty()) {
+            throw new RuntimeException("Browser por defecto no configurado");
+        }
+
+        if (getAdminUsername() == null || getAdminUsername().isEmpty()) {
+            throw new RuntimeException("Usuario admin no configurado");
+        }
+
+        // Log de validación exitosa
+        ConfigReader.getInstance(); // Asegurar que está inicializado
+        System.out.println("✓ Configuración esencial validada correctamente");
+    }
 }

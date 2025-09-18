@@ -1,6 +1,6 @@
 # ================================================
-# SELENIUM AUTOMATION FRAMEWORK - CONFIGURACIÓN
-# Company QA Team - Application Configuration
+# SELENIUM AUTOMATION FRAMEWORK - CONFIGURACIÓN UNIFICADA
+# Kernotec QA Team - Application Configuration
 # ================================================
 
 # === INFORMACIÓN DE LA APLICACIÓN ===
@@ -8,60 +8,364 @@ app:
   name: "Selenium Automation Framework"
   version: "1.0.0"
   description: "Framework de automatización web para Kernotec"
+  baseUrl: "https://test-app.company.com"
 
-# URLs por ambiente
+# === CONFIGURACIÓN DE ENTORNOS ===
 environments:
   dev:
     baseUrl: "https://dev-app.company.com"
+    apiUrl: "https://dev-api.company.com"
   test:
     baseUrl: "https://test-app.company.com"
+    apiUrl: "https://test-api.company.com"
   staging:
     baseUrl: "https://staging-app.company.com"
+    apiUrl: "https://staging-api.company.com"
   prod:
     baseUrl: "https://app.company.com"
+    apiUrl: "https://api.company.com"
 
-# Configuración de testing
+# === CONFIGURACIÓN DE TESTING ===
 testing:
   environment: "test"
   parallel:
     enabled: false
     threadCount: 3
+    dataProviderThreadCount: 2
+  retry:
+    failedTests: 1
+    maxAttempts: 3
+    retryInterval: 2000
+  execution:
+    takeScreenshotOnFailure: true
+    takeScreenshotOnSuccess: false
+    cleanupAfterSuite: true
+    validateEnvironment: true
+    maxTestExecutionTime: 300
 
-# Configuración de browsers
+# === CONFIGURACIÓN DE NAVEGADOR ===
 browser:
   default: "chrome"
   headless: false
+  maximize: true
+  window:
+    width: 1920
+    height: 1080
+  
   chrome:
     options:
       - "--no-sandbox"
       - "--disable-dev-shm-usage"
       - "--disable-gpu"
       - "--disable-extensions"
+      - "--disable-popup-blocking"
+      - "--disable-notifications"
       - "--remote-allow-origins=*"
+      - "--disable-web-security"
+      - "--ignore-certificate-errors"
+      - "--allow-running-insecure-content"
+  
   firefox:
     preferences:
       "dom.webnotifications.enabled": false
       "media.navigator.permission.disabled": true
+      "dom.push.enabled": false
+      "geo.enabled": false
+      "security.tls.insecure_fallback_hosts": "test-app.company.com,dev-app.company.com"
+  
+  edge:
+    options:
+      - "--no-sandbox"
+      - "--disable-dev-shm-usage"
+      - "--disable-gpu"
+      - "--ignore-certificate-errors"
 
-# Timeouts
+# === TIMEOUTS (en segundos) ===
 timeouts:
   implicit: 10
   explicit: 30
   pageLoad: 60
   script: 30
+  polling: 500
+  
+  # Timeouts específicos para elementos comunes
+  dropdown: 15
+  modal: 10
+  ajax: 20
+  fileUpload: 60
 
-# Usuarios de prueba
+# === DATOS DE USUARIOS DE TEST ===
 users:
   admin:
     username: "admin_user"
     password: "Admin@123"
     role: "administrator"
+    email: "admin@company.com"
+    permissions: [ "read", "write", "delete", "admin" ]
+  
+  manager:
+    username: "manager_user"
+    password: "Manager@123"
+    role: "manager"
+    email: "manager@company.com"
+    permissions: [ "read", "write" ]
+  
+  employee:
+    username: "employee_user"
+    password: "Employee@123"
+    role: "employee"
+    email: "employee@company.com"
+    permissions: [ "read" ]
+  
   test:
     username: "test_user"
     password: "Test@123"
     role: "tester"
+    email: "test@company.com"
+    permissions: [ "read", "write" ]
 
-# Features
+# === CONFIGURACIÓN DE REPORTES ===
+reports:
+  directory: "test-output/reports"
+  format: "html"
+  includeLogs: true
+  includeScreenshots: true
+  
+  extent:
+    enabled: true
+    path: "test-output/extent-reports/"
+    documentTitle: "Kernotec Automation Report"
+    reportName: "Test Execution Results"
+    theme: "standard"
+    encoding: "utf-8"
+    timestampFormat: "MMM dd, yyyy HH:mm:ss"
+  
+  testng:
+    enabled: true
+    path: "test-output/testng-reports/"
+  
+  drone:
+    publishReports: true
+    reportPath: "test-output/reports/*.html"
+    artifactRetention: 30
+
+# === CONFIGURACIÓN DE SCREENSHOTS ===
+screenshots:
+  enabled: true
+  directory: "test-output/screenshots"
+  path: "test-output/screenshots/"
+  format: "png"
+  quality: "high"
+  onFailure: true
+  onSuccess: false
+  fullPage: false
+  
+  cleanup:
+    enabled: true
+    daysToKeep: 7
+    maxSizeMB: 100
+
+# === CONFIGURACIÓN DE LOGS ===
+logging:
+  level: "INFO"
+  directory: "test-output/logs"
+  pattern: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  
+  file:
+    enabled: true
+    name: "automation.log"
+    path: "test-output/logs/"
+    maxSize: "10MB"
+    maxFiles: 5
+  
+  console:
+    enabled: true
+    colorize: true
+    level: "INFO"
+
+# === FEATURE FLAGS ===
 features:
   screenshots: true
+  videoRecording: false
   apiTesting: true
+  databaseTesting: false
+  mobileTesting: false
+  performanceMetrics: false
+  accessibilityTesting: false
+  visualRegression: false
+  crossBrowserTesting: true
+  parallelExecution: false
+  headlessTesting: true
+
+# === CONFIGURACIÓN DE SEGURIDAD ===
+security:
+  ssl:
+    verification: false
+    trustAllCertificates: true
+    ignoreCertificateErrors: true
+  
+  certificates:
+    path: "src/test/resources/certificates/"
+    corporateCert: "company-cert.pem"
+  
+  proxy:
+    enabled: false
+    host: "proxy.company.com"
+    port: 8080
+    username: ""
+    password: ""
+    nonProxyHosts: "localhost|127.0.0.1|*.company.com"
+
+# === CONFIGURACIÓN DE CONTENEDORES (DRONE) ===
+container:
+  selenium:
+    hubUrl: "http://selenium-hub:4444/wd/hub"
+    gridEnabled: false
+  
+  network:
+    driverHost: "localhost"
+    appHost: "app"
+  
+  resources:
+    memory: "2Gi"
+    cpu: "1000m"
+
+# === CONFIGURACIÓN DE DRONE CI ===
+drone:
+  pipeline:
+    name: "selenium-tests"
+    trigger: "push"
+  
+  services:
+    selenium:
+      image: "selenium/standalone-chrome:latest"
+      environment:
+        - "HUB_HOST=selenium-hub"
+  
+  notifications:
+    slack:
+      enabled: false
+      webhook: ""
+      channel: "#qa-automation"
+    
+    email:
+      enabled: false
+      recipients:
+        - "qa-team@company.com"
+
+# === CONFIGURACIÓN DE BASE DE DATOS ===
+database:
+  enabled: false
+  type: "mysql"
+  host: "localhost"
+  port: 3306
+  name: "testdb"
+  username: "testuser"
+  password: "testpass"
+  driver: "com.mysql.cj.jdbc.Driver"
+  
+  hikari:
+    maximumPoolSize: 5
+    connectionTimeout: 20000
+    idleTimeout: 300000
+
+# === CONFIGURACIÓN DE API ===
+api:
+  baseUrl: "https://api-test.company.com"
+  version: "v1"
+  timeout: 30
+  retryCount: 3
+  
+  headers:
+    "Content-Type": "application/json"
+    "Accept": "application/json"
+    "User-Agent": "Automation-Framework/1.0"
+  
+  auth:
+    type: "bearer"
+    token: ""
+  
+  rateLimit:
+    requestsPerSecond: 10
+    burstSize: 20
+
+# === CONFIGURACIÓN DE DATOS DE TEST ===
+testData:
+  source: "yaml"
+  strategy: "excel"
+  path: "src/test/resources/testdata/"
+  
+  files:
+    userCredentials: "testdata/users.xlsx"
+    testScenarios: "testdata/test-scenarios.json"
+    formData: "testdata/form-data.yml"
+  
+  cache:
+    enabled: true
+    ttl: 3600
+  
+  generation:
+    timestampSuffix: true
+    prefix: "auto_"
+    faker:
+      locale: "es_MX"
+
+# === CONFIGURACIÓN AVANZADA ===
+advanced:
+  element:
+    retry:
+      count: 3
+      delay: 1000
+      exponentialBackoff: true
+  
+  waits:
+    pollingInterval: 500
+    fluentWaitTimeout: 30
+    customTimeouts:
+      dropdown: 15
+      modal: 10
+      ajax: 20
+      fileUpload: 60
+  
+  javascript:
+    enabled: true
+    timeout: 10
+    asyncTimeout: 30
+
+# === CONFIGURACIÓN DE LÍMITES ===
+limits:
+  maxTestExecutionTime: 1800
+  maxPageLoadTime: 120
+  maxElementWaitTime: 60
+  maxScreenshotSize: "5MB"
+  maxLogFileSize: "50MB"
+  maxReportSize: "20MB"
+
+# === CONFIGURACIÓN DE CLEANUP ===
+cleanup:
+  afterSuite: true
+  afterClass: false
+  
+  directories:
+    - "temp/"
+    - "cache/"
+    - "downloads/"
+  
+  files:
+    olderThanDays: 7
+    extensions:
+      - ".tmp"
+      - ".cache"
+      - ".download"
+
+# === CONFIGURACIÓN DE EMAIL ===
+email:
+  enabled: false
+  smtp:
+    host: "smtp.gmail.com"
+    port: 587
+    username: "automation@kernotec.com"
+    password: "password"
+  recipients:
+    - "qa-team@kernotec.com"
+    - "dev-team@kernotec.com"

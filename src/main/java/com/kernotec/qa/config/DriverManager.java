@@ -16,7 +16,7 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 
 /**
  * Clase para gestión centralizada de WebDrivers Implementa Factory Pattern para crear diferentes
- * tipos de drivers Actualizada para usar configuración YAML
+ * tipos de drivers Actualizada para usar ConfigReader unificado
  *
  * @author QA Team Kernotec
  * @version 1.0
@@ -67,17 +67,29 @@ public class DriverManager {
         }
 
         // Configuraciones globales del driver
-        webDriver.manage()
-            .window()
-            .maximize();
+        if (ConfigReader.getBoolean("browser.maximize", true)) {
+            webDriver.manage()
+                .window()
+                .maximize();
+        }
+
         webDriver.manage()
             .timeouts()
-            .implicitlyWait(Duration.ofSeconds(
-                ConfigReader.getImplicitWait()));
+            .implicitlyWait(
+                Duration.ofSeconds(ConfigReader.getImplicitWait())
+            );
+
         webDriver.manage()
             .timeouts()
-            .pageLoadTimeout(Duration.ofSeconds(
-                ConfigReader.getPageLoadTimeout()));
+            .pageLoadTimeout(
+                Duration.ofSeconds(ConfigReader.getPageLoadTimeout())
+            );
+
+        webDriver.manage()
+            .timeouts()
+            .scriptTimeout(
+                Duration.ofSeconds(ConfigReader.getScriptTimeout())
+            );
 
         driver.set(webDriver);
         logger.info("Driver inicializado exitosamente");
@@ -99,6 +111,7 @@ public class DriverManager {
         List<String> chromeOptions = ConfigReader.getChromeOptions();
         if (chromeOptions != null && !chromeOptions.isEmpty()) {
             chromeOptions.forEach(options::addArguments);
+            logger.debug("Opciones de Chrome aplicadas desde configuración: {}", chromeOptions);
         } else {
             // Opciones por defecto si no están en YAML
             options.addArguments("--no-sandbox");
@@ -108,6 +121,7 @@ public class DriverManager {
             options.addArguments("--disable-popup-blocking");
             options.addArguments("--disable-notifications");
             options.addArguments("--remote-allow-origins=*");
+            logger.debug("Opciones de Chrome por defecto aplicadas");
         }
 
         return new ChromeDriver(options);
@@ -137,10 +151,13 @@ public class DriverManager {
                     options.addPreference(key, (String) value);
                 }
             });
+            logger.debug(
+                "Preferencias de Firefox aplicadas desde configuración: {}", firefoxPrefs.keySet());
         } else {
             // Preferencias por defecto
             options.addPreference("dom.webnotifications.enabled", false);
             options.addPreference("media.navigator.permission.disabled", true);
+            logger.debug("Preferencias de Firefox por defecto aplicadas");
         }
 
         return new FirefoxDriver(options);
@@ -158,10 +175,18 @@ public class DriverManager {
             options.addArguments("--headless");
         }
 
-        // Opciones similares a Chrome
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--disable-gpu");
+        // Obtener opciones desde configuración YAML
+        List<String> edgeOptions = ConfigReader.getEdgeOptions();
+        if (edgeOptions != null && !edgeOptions.isEmpty()) {
+            edgeOptions.forEach(options::addArguments);
+            logger.debug("Opciones de Edge aplicadas desde configuración: {}", edgeOptions);
+        } else {
+            // Opciones por defecto si no están en YAML
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--disable-gpu");
+            logger.debug("Opciones de Edge por defecto aplicadas");
+        }
 
         return new EdgeDriver(options);
     }
@@ -187,5 +212,47 @@ public class DriverManager {
     public static void navigateToUrl(String url) {
         logger.info("Navegando a URL: {}", url);
         getDriver().get(url);
+    }
+
+    /**
+     * Inicializa driver con configuración por defecto
+     */
+    public static void initializeDriverWithDefaults() {
+        String browser = ConfigReader.getDefaultBrowser();
+        boolean headless = ConfigReader.isHeadlessMode();
+        initializeDriver(browser, headless);
+    }
+
+    /**
+     * Verifica si hay un driver activo
+     *
+     * @return true si hay driver activo
+     */
+    public static boolean hasActiveDriver() {
+        return driver.get() != null;
+    }
+
+    /**
+     * Obtiene información del browser actual
+     *
+     * @return String con información del browser
+     */
+    public static String getBrowserInfo() {
+        WebDriver currentDriver = driver.get();
+        if (currentDriver != null) {
+            try {
+                String browserName = currentDriver.getClass()
+                    .getSimpleName()
+                    .replace("Driver", "");
+                String currentUrl = currentDriver.getCurrentUrl();
+                String title = currentDriver.getTitle();
+                return String.format(
+                    "Browser: %s, URL: %s, Title: %s", browserName, currentUrl, title);
+            } catch (Exception e) {
+                logger.debug("Error obteniendo información del browser: {}", e.getMessage());
+                return "Browser activo (información no disponible)";
+            }
+        }
+        return "No hay browser activo";
     }
 }

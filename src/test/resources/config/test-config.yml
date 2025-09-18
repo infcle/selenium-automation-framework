@@ -1,39 +1,36 @@
-# Configuración específica para tests
-# Este archivo sobrescribe configuraciones de application.yml para testing
+# ================================================
+# TEST-CONFIG.yml - OVERRIDES DE CONFIGURACIÓN
+# Configuraciones específicas que sobrescriben application.yml
+# ================================================
 
-# Configuración específica de test
-test:
+# Overrides para ambiente de testing específico
+testing:
   environment: "test"
-  baseUrl: "https://test.kernotec.com"
-  timeout: 45
-  retryCount: 1
+  parallel:
+    enabled: false
+    threadCount: 1  # Para debugging, usar 1 thread
+  retry:
+    failedTests: 2  # Más reintentos en testing
 
-# Configuración de browsers para testing
+# Overrides para debugging
 browser:
-  default: "chrome"
-  headless: true
-  options:
-    chrome:
-      - "--headless"
-      - "--no-sandbox"
-      - "--disable-dev-shm-usage"
-      - "--disable-gpu"
-      - "--disable-extensions"
-      - "--window-size=1920,1080"
+  headless: false  # Siempre visible durante desarrollo
 
-# Configuración de usuarios de test
-users:
-  testuser:
-    username: "testuser@kernotec.com"
-    password: "Test123!"
-  admin:
-    username: "admin@kernotec.com"
-    password: "Admin123!"
+# Overrides de timeouts para desarrollo (más tiempo)
+timeouts:
+  explicit: 45  # Más tiempo para debugging
+  pageLoad: 90
 
-# Configuración de reportes para testing
-reporting:
-  screenshots:
-    onFailure: true
-    onSuccess: false
-  extentReports:
-    theme: "dark"
+# Overrides de logging para más detalle
+logging:
+  level: "DEBUG"  # Más logs durante desarrollo
+  console:
+    level: "DEBUG"
+
+# Overrides de features para desarrollo
+features:
+  screenshots: true
+  videoRecording: false  # Deshabilitado para desarrollo
+
+# Overrides específicos para CI/CD (se pueden activar con profiles)
+# Estas configuraciones se pueden activar condicionalmente
