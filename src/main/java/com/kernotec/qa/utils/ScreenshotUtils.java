@@ -176,7 +176,7 @@ public class ScreenshotUtils {
      */
     private static String getScreenshotsDirectory() {
         // Intentar obtener desde configuración, sino usar default
-        String configPath = ConfigReader.getString("reporting.screenshots.path");
+        String configPath = ConfigReader.getString("screenshots.directory");
         if (configPath != null && !configPath.trim()
             .isEmpty())
         {
@@ -219,7 +219,7 @@ public class ScreenshotUtils {
             }
 
             long cutoffTime = System.currentTimeMillis() - (daysToKeep * 24L * 60L * 60L * 1000L);
-            int deletedCount = 0;
+            final int[] deletedCount = {0};
 
             Files.walk(dirPath)
                 .filter(Files::isRegularFile)
@@ -241,6 +241,7 @@ public class ScreenshotUtils {
                 .forEach(path -> {
                     try {
                         Files.delete(path);
+                        deletedCount[0]++;
                         logger.debug("Captura antigua eliminada: {}", path.getFileName());
                     } catch (IOException e) {
                         logger.warn(
@@ -248,7 +249,7 @@ public class ScreenshotUtils {
                     }
                 });
 
-            logger.info("Limpieza completada. {} capturas eliminadas", deletedCount);
+            logger.info("Limpieza completada. {} capturas eliminadas", deletedCount[0]);
 
         } catch (Exception e) {
             logger.error("Error en limpieza de capturas: {}", e.getMessage());

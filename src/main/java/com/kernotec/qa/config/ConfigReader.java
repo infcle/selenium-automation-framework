@@ -337,6 +337,10 @@ public class ConfigReader {
      * Obtiene el ambiente actual
      */
     public static String getEnvironment() {
+        String systemEnvironment = System.getProperty("test.environment");
+        if (systemEnvironment != null && !systemEnvironment.isBlank()) {
+            return systemEnvironment;
+        }
         return getString("testing.environment", "test");
     }
 

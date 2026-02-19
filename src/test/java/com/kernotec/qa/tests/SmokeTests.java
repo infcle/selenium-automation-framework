@@ -1,9 +1,17 @@
 package com.kernotec.qa.tests;
 
-/**
- * Author: ecoronel Created on: 16/09/2025 Project: selenium-automation-framework File:
- * SmokeTests.java Version: 1.0 Last modified: 16/09/2025 Description:
- */
-public class SmokeTests {
+import com.kernotec.qa.config.DriverManager;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
+public class SmokeTests extends BaseTest {
+
+    @Test(groups = {"smoke"})
+    public void baseUrlShouldLoad() {
+        String currentUrl = DriverManager.getDriver().getCurrentUrl();
+        String title = DriverManager.getDriver().getTitle();
+
+        Assert.assertTrue(currentUrl.startsWith("http"), "La URL cargada no es valida");
+        Assert.assertFalse(title == null || title.isBlank(), "La pagina debe tener titulo");
+    }
 }

@@ -20,8 +20,11 @@
         <webdrivermanager.version>6.1.0</webdrivermanager.version>
         <aventstack.version>5.1.1</aventstack.version>
         <apache.poi.version>5.4.0</apache.poi.version>
-        <logging.log4j.version>2.23.1</logging.log4j.version>
+        <logging.log4j.version>2.25.3</logging.log4j.version>
         <jackson.version>2.17.0</jackson.version>
+        <browser>chrome</browser>
+        <headless>true</headless>
+        <environment>test</environment>
     </properties>
 
     <dependencies>
@@ -98,4 +101,21 @@
             <version>${jackson.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <browser>${browser}</browser>
+                        <headless>${headless}</headless>
+                        <test.environment>${environment}</test.environment>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -1,36 +1,8 @@
-# ================================================
-# TEST-CONFIG.yml - OVERRIDES DE CONFIGURACIÓN
-# Configuraciones específicas que sobrescriben application.yml
-# ================================================
-
-# Overrides para ambiente de testing específico
 testing:
   environment: "test"
-  parallel:
-    enabled: false
-    threadCount: 1  # Para debugging, usar 1 thread
-  retry:
-    failedTests: 2  # Más reintentos en testing
 
-# Overrides para debugging
 browser:
-  headless: false  # Siempre visible durante desarrollo
+  headless: true
 
-# Overrides de timeouts para desarrollo (más tiempo)
 timeouts:
-  explicit: 45  # Más tiempo para debugging
-  pageLoad: 90
-
-# Overrides de logging para más detalle
-logging:
-  level: "DEBUG"  # Más logs durante desarrollo
-  console:
-    level: "DEBUG"
-
-# Overrides de features para desarrollo
-features:
-  screenshots: true
-  videoRecording: false  # Deshabilitado para desarrollo
-
-# Overrides específicos para CI/CD (se pueden activar con profiles)
-# Estas configuraciones se pueden activar condicionalmente
+  explicit: 15
